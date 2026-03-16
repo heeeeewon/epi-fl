@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>역학 및 건강증진 플립 러닝 활동</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <style>
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .animate-soft-pulse { animation: softPulse 1.2s ease-in-out 1; }
+    .animate-soft-bounce { animation: softBounce 0.8s ease-in-out 1; }
+    @keyframes softPulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.01); }
+      100% { transform: scale(1); }
+    }
+    @keyframes softBounce {
+      0% { transform: translateY(0); }
+      30% { transform: translateY(-4px); }
+      60% { transform: translateY(0); }
+      80% { transform: translateY(-2px); }
+      100% { transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useEffect, useMemo, useRef, useState } = React;
+    const STORAGE_KEY = "epi-flip-learning-leaderboard-v1";
+
+    function QRCodeBox({ value, size = 190 }) {
+      const ref = useRef(null);
+
+      useEffect(() => {
+        if (!ref.current) return;
+        ref.current.innerHTML = "";
+        const safeValue = value || "https://example.com";
+        new QRCode(ref.current, {
+          text: safeValue,
+          width: size,
+          height: size,
+          correctLevel: QRCode.CorrectLevel.M,
+        });
+      }, [value, size]);
+
+      return <div ref={ref} />;
+    }
+
+    function QuickInfo({ label, value }) {
+      return (
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
+          <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}</div>
+          <div className="mt-1 text-lg font-bold text-slate-900">{value}</div>
+        </div>
+      );
+    }
+
+    function StatCard({ label, value, icon }) {
+      return (
+        <div className="rounded-2xl bg-white/10 px-4 py-3 ring-1 ring-white/15 backdrop-blur-sm shadow-sm">
+          <div className="flex items-center gap-2 text-xs uppercase tracking-wide text-slate-200">
+            <span className="text-sm leading-none">{icon}</span>
+            <span>{label}</span>
+          </div>
+          <div className="mt-2 text-2xl font-bold text-white">{value}</div>
+        </div>
+      );
+    }
+
+    function getRank(score, total) {
+      const ratio = total === 0 ? 0 : score / total;
+      if (ratio >= 0.92) {
+        return {
+          label: "수석 역학 탐정",
+          emoji: "👑",
+          description: "지표 계산과 해석을 모두 정확히 연결했습니다.",
+        };
+      }
+      if (ratio >= 0.75) {
+        return {
+          label: "우수 역학 조사관",
+          emoji: "🕵️",
+          description: "대부분의 지표를 정확히 해석했습니다.",
+        };
+      }
+      if (ratio >= 0.55) {
+        return {
+          label: "보건 분석가",
+          emoji: "📊",
+          description: "기본 개념은 이해했지만 일부 지표 해석이 더 필요합니다.",
+        };
+      }
+      return {
+        label: "역학 입문자",
+        emoji: "🌱",
+        description: "분모와 지표 해석을 다시 차근차근 복습해 보세요.",
+      };
+    }
+
+    function App() {
+      const scenario = {
+        title: "지하 합창실의 봄열",
+        subtitle: "플립러닝 활동",
+        mission:
+          "가람고등학교에서 갑자기 고열, 기침, 인후통, 피로를 호소하는 학생들이 늘어났습니다. 건강지표를 계산하고 해석해 유행병의 원인과 가장 적절한 대응을 찾아보세요.",
+        meta: {
+          sick: 96,
+          hospitalizations: 3,
+          deaths: 0,
+          location: "한국, 가람고등학교",
+          playTime: "20분 내외",
+        },
+        steps: [
+          {
+            id: 1,
+            clueTitle: "단서 1 · 숫자가 많으면 더 위험할까?",
+            story:
+              "뉴스에서 '횡단보도 사고 사망자 1,200명, 무단횡단 사고 사망자 480명'이라는 보도가 나왔다. 어떤 학생은 횡단보도가 더 위험하다고 주장한다.",
+            data: {
+              columns: ["구분", "사망자 수", "행동 횟수"],
+              rows: [
+                ["횡단보도", "1,200", "200,000,000"],
+                ["무단횡단", "480", "2,000,000"],
+              ],
+            },
+            question: "어떤 해석이 가장 타당한가?",
+            options: [
+              {
+                label: "횡단보도가 더 위험하다",
+                correct: false,
+                explanation: "사망자 수만 비교하면 안 됩니다. 행동 횟수라는 분모가 다르기 때문입니다.",
+              },
+              {
+                label: "무단횡단이 훨씬 위험하다",
+                correct: true,
+                explanation:
+                  "횡단보도는 1,200/200,000,000, 무단횡단은 480/2,000,000이므로 무단횡단의 위험이 훨씬 큽니다.",
+              },
+              {
+                label: "두 행동의 위험도는 같다",
+                correct: false,
+                explanation: "분모가 크게 다르므로 동일하다고 볼 수 없습니다.",
+              },
+            ],
+            learn: "빈도수와 발생률은 다르며, 위험 해석에는 반드시 분모를 고려해야 합니다.",
+          },
+          {
+            id: 2,
+            clueTitle: "단서 2 · 보건실의 월요일 아침",
+            story:
+              "월요일 오전 9시, 보건실은 열이 나는 학생들로 붐빈다. 학교 전체 학생 수는 600명이고, 이 시점에 현재 증상이 있는 학생은 24명이다.",
+            data: {
+              columns: ["항목", "수"],
+              rows: [
+                ["전체 학생 수", "600"],
+                ["현재 증상이 있는 학생 수", "24"],
+              ],
+            },
+            question: "오늘 오전 9시 기준 점유병률은 얼마인가?",
+            options: [
+              { label: "2%", correct: false, explanation: "분모 계산이 틀렸습니다." },
+              { label: "4%", correct: true, explanation: "24/600 = 4%입니다." },
+              { label: "24%", correct: false, explanation: "사람 수와 비율을 혼동했습니다." },
+            ],
+            learn: "점유병률은 특정 시점에 질병을 가진 사람의 비율입니다.",
+          },
+          {
+            id: 3,
+            clueTitle: "단서 3 · 귀가 조치 이후",
+            story:
+              "증상이 있는 학생 24명을 귀가 조치하였다. 이후 7일 동안 72명의 학생이 새로 아팠다.",
+            data: {
+              columns: ["항목", "수"],
+              rows: [
+                ["전체 학생 수", "600"],
+                ["귀가 조치 시점에 질병이 없던 학생 수", "576"],
+                ["새로 발생한 환자", "72"],
+              ],
+            },
+            question: "7일 누적발생률은?",
+            options: [
+              { label: "12%", correct: false, explanation: "전체 학생 수 600을 분모로 잘못 사용했습니다." },
+              { label: "12.5%", correct: true, explanation: "72/576 = 12.5%입니다." },
+              { label: "4%", correct: false, explanation: "이 값은 점유병률과 관련된 값입니다." },
+            ],
+            learn: "누적발생률은 위험집단(population at risk)을 분모로 사용합니다.",
+          },
+          {
+            id: 4,
+            clueTitle: "단서 4 · 어떤 지표를 먼저 계산할까?",
+            story:
+              "학생 활동을 조사했더니 다음과 같은 결과가 나타났다. 합창 연습, 특식 점심, 탈의실 사용 세 가지 노출을 비교하였다. 먼저 이 자료에서 어떤 지표를 산출해야 하는지 판단해 보자.",
+            data: {
+              columns: ["노출", "아픈 사람", "건강한 사람", "전체"],
+              rows: [
+                ["합창 연습", "36", "24", "60"],
+                ["특식 점심", "28", "132", "160"],
+                ["탈의실 사용", "12", "68", "80"],
+                ["비노출", "24", "356", "380"],
+              ],
+            },
+            question: "이 자료에서 각 노출군을 비교하기 전에 먼저 산출해야 할 지표는 무엇인가?",
+            options: [
+              {
+                label: "발병률(공격률)",
+                correct: true,
+                explanation:
+                  "집단발병 상황에서 노출군별로 아픈 사람의 비율을 비교해야 하므로 먼저 발병률, 즉 공격률을 계산해야 합니다.",
+              },
+              {
+                label: "사망률",
+                correct: false,
+                explanation: "사망 자료가 없으므로 사망률을 계산하는 상황이 아닙니다.",
+              },
+              {
+                label: "발생률(인년 기준 incidence rate)",
+                correct: false,
+                explanation: "관찰시간 정보가 없고, 이 자료는 노출군별 비율 비교를 위한 집단발병 자료입니다.",
+              },
+            ],
+            learn: "집단발병 조사에서는 먼저 노출군별 공격률을 계산한 뒤 어떤 요인과 더 강하게 연결되는지 비교합니다.",
+          },
+          {
+            id: 5,
+            clueTitle: "단서 5 · 노출 요인 비교",
+            story: "이제 각 노출군의 공격률을 계산해 어느 요인이 유행병과 가장 강한 연관성을 보이는지 비교한다.",
+            data: {
+              columns: ["노출", "아픈 사람", "건강한 사람", "전체"],
+              rows: [
+                ["합창 연습", "36", "24", "60"],
+                ["특식 점심", "28", "132", "160"],
+                ["탈의실 사용", "12", "68", "80"],
+                ["비노출", "24", "356", "380"],
+              ],
+            },
+            question: "각 노출군의 발병률(공격률)을 계산했을 때 가장 높은 값은 어느 것인가?",
+            options: [
+              {
+                label: "합창 연습 (약 60%)",
+                correct: true,
+                explanation:
+                  "합창 연습군 발병률은 36/60 = 60%로 가장 높습니다.",
+              },
+              {
+                label: "특식 점심 (약 18%)",
+                correct: false,
+                explanation: "28/160 ≈ 17.5%로 합창 연습보다 낮습니다.",
+              },
+              {
+                label: "탈의실 사용 (약 15%)",
+                correct: false,
+                explanation: "12/80 = 15%로 가장 높지 않습니다.",
+              },
+              {
+                label: "비노출 (약 6%)",
+                correct: false,
+                explanation: "24/380 ≈ 6.3%입니다.",
+              }
+            ],
+            learn: "발병률을 비교하면 어떤 노출이 가장 강한 연관성을 보이는지 확인할 수 있습니다.",
+          },
+          {
+            id: 6,
+            clueTitle: "단서 6 · 유병률 해석",
+            story:
+              "4월 21일 현재 아픈 학생은 9명이며, 4월 1일부터 21일까지 총 96명이 한 번 이상 아팠다.",
+            data: {
+              columns: ["항목", "수"],
+              rows: [
+                ["현재 환자 수", "9"],
+                ["전체 학생 수", "600"],
+                ["기간 중 한 번 이상 아팠던 학생 수", "96"],
+              ],
+            },
+            question: "옳은 해석은?",
+            options: [
+              {
+                label: "점유병률 1.5%, 기간유병률 16%",
+                correct: true,
+                explanation: "점유병률은 9/600 = 1.5%, 기간유병률은 96/600 = 16%입니다.",
+              },
+              {
+                label: "점유병률 16%, 기간유병률 1.5%",
+                correct: false,
+                explanation: "두 지표가 뒤바뀌었습니다.",
+              },
+              {
+                label: "둘 다 16%",
+                correct: false,
+                explanation: "현재 환자 수와 기간 중 환자 수는 다릅니다.",
+              },
+            ],
+            learn: "점유병률과 기간유병률은 서로 다른 질문에 답합니다.",
+          },
+          {
+            id: 7,
+            clueTitle: "단서 7 · 환경 비교 계산",
+            story: "합창 환경 두 곳의 데이터를 비교하였다.",
+            data: {
+              columns: ["환경", "아픈 사람", "건강한 사람", "전체"],
+              rows: [
+                ["지하실 · 창문 닫힘", "9", "21", "30"],
+                ["강당 · 창문 열림", "2", "38", "40"],
+              ],
+            },
+            question: "다음 중 계산 결과로 옳은 것은 무엇인가? (RR=상대위험도, RD=절대위험차)",
+            options: [
+              {
+                label: "지하실 공격률 30%, 강당 공격률 5%, RR=6, RD=25%p",
+                correct: true,
+                explanation:
+                  "지하실 9/30 = 30%, 강당 2/40 = 5%, RR = 30%/5% = 6, RD = 30%-5% = 25%p입니다.",
+              },
+              {
+                label: "지하실 공격률 30%, 강당 공격률 5%, RR=3, RD=10%p",
+                correct: false,
+                explanation: "공격률은 맞지만 RR과 RD 계산이 틀렸습니다.",
+              },
+              {
+                label: "지하실 공격률 9%, 강당 공격률 2%, RR≈4, RD≈7%p",
+                correct: false,
+                explanation: "공격률 계산 자체가 틀렸습니다. 분모는 각 집단 전체입니다.",
+              },
+            ],
+            learn: "RR은 상대적 차이, RD는 절대적 차이를 보여줍니다.",
+          },
+          {
+            id: 8,
+            clueTitle: "단서 8 · 사망률과 치명률",
+            story: "인구 20,000명 중 폐렴 환자 200명, 사망자 10명이 발생했다.",
+            data: {
+              columns: ["항목", "수"],
+              rows: [
+                ["전체 인구", "20,000"],
+                ["폐렴 환자 수", "200"],
+                ["사망자 수", "10"],
+              ],
+            },
+            question: "올바른 해석은?",
+            options: [
+              {
+                label: "사망률 0.05%, 치명률 5%",
+                correct: true,
+                explanation: "사망률은 10/20,000 = 0.05%, 치명률은 10/200 = 5%입니다.",
+              },
+              { label: "둘 다 5%", correct: false, explanation: "사망률과 치명률의 분모가 다릅니다." },
+              { label: "사망률 5%, 치명률 0.05%", correct: false, explanation: "두 지표가 뒤바뀌었습니다." },
+            ],
+            learn: "사망률은 인구를 분모로, 치명률은 환자를 분모로 사용합니다.",
+          },
+          {
+            id: 9,
+            clueTitle: "단서 9 · 비례사망률",
+            story: "한 해 전체 사망자 400명 중 암 사망은 120명이었다.",
+            data: {
+              columns: ["항목", "수"],
+              rows: [
+                ["전체 사망자 수", "400"],
+                ["암 사망자 수", "120"],
+              ],
+            },
+            question: "비례사망률에 대한 올바른 해석은?",
+            options: [
+              {
+                label: "사망자 중 30%가 암으로 사망했다",
+                correct: true,
+                explanation: "120/400 = 30%입니다. 이는 전체 사망 중 암 사망의 비중을 뜻합니다.",
+              },
+              { label: "전체 인구의 30%가 암으로 사망했다", correct: false, explanation: "분모가 전체 인구가 아닙니다." },
+              { label: "암 환자의 치명률이 30%다", correct: false, explanation: "비례사망률과 치명률은 다른 지표입니다." },
+            ],
+            learn: "비례사망률은 사망 원인의 구성 비율을 보여줍니다.",
+          },
+          {
+            id: 10,
+            clueTitle: "단서 10 · 지역 비교와 표준화",
+            story: "두 지역의 조사망률을 비교하려고 한다. 그러나 연령구조가 다르다.",
+            data: {
+              columns: ["지역", "인구", "사망자 수", "65세 이상 비율"],
+              rows: [
+                ["A", "1,000", "20", "35%"],
+                ["B", "1,000", "15", "10%"],
+              ],
+            },
+            question: "가장 타당한 판단은?",
+            options: [
+              {
+                label: "연령구조를 고려한 표준화 비교가 필요하다",
+                correct: true,
+                explanation: "고령 인구 비율이 다르면 조사망률만으로 지역 위험을 직접 비교하기 어렵습니다.",
+              },
+              { label: "A가 무조건 더 위험하다", correct: false, explanation: "구성 차이 때문에 단정할 수 없습니다." },
+              { label: "사망자 수 차이가 작으므로 비교할 필요가 없다", correct: false, explanation: "비교는 가능하지만 표준화가 필요합니다." },
+            ],
+            learn: "집단 간 비교에서는 구성 차이를 고려한 표준화가 중요합니다.",
+          },
+          {
+            id: 11,
+            clueTitle: "단서 11 · 유병률과 발생률의 관계",
+            story:
+              "한 만성질환의 치료 성과가 크게 좋아져 환자들이 더 오래 생존하게 되었다. 신규 발생은 크게 변하지 않았다.",
+            data: {
+              columns: ["지표", "변화"],
+              rows: [
+                ["발생률", "거의 변화 없음"],
+                ["질병 지속 기간", "증가"],
+              ],
+            },
+            question: "이 경우 유병률은 어떻게 변할 가능성이 높은가?",
+            options: [
+              { label: "감소한다", correct: false, explanation: "지속 기간이 늘면 유병률이 감소하지 않습니다." },
+              {
+                label: "증가한다",
+                correct: true,
+                explanation: "유병률은 발생률과 지속 기간의 영향을 받으므로 지속 기간 증가 시 커질 수 있습니다.",
+              },
+              { label: "변화 없다", correct: false, explanation: "발생률이 같아도 지속 기간 증가로 유병률이 달라질 수 있습니다." },
+            ],
+            learn: "유병률은 발생률과 질병 지속 기간의 영향을 함께 받습니다.",
+          },
+          {
+            id: 12,
+            clueTitle: "단서 12 · SMR 해석",
+            story: "한 공장의 사망비를 분석한 결과 SMR이 140으로 계산되었다.",
+            data: {
+              columns: ["항목", "값"],
+              rows: [
+                ["SMR", "140"],
+                ["기준집단", "일반 인구"],
+              ],
+            },
+            question: "가장 적절한 해석은?",
+            options: [
+              {
+                label: "관찰 사망이 기대 사망보다 40% 높다",
+                correct: true,
+                explanation: "SMR 100이 기준이며, 140은 기대보다 40% 높은 수준을 뜻합니다.",
+              },
+              { label: "사망률이 140%다", correct: false, explanation: "SMR은 비율 자체가 아니라 기대 대비 상대적 크기입니다." },
+              { label: "공장 노동자의 140%가 사망했다", correct: false, explanation: "해석이 완전히 잘못되었습니다." },
+            ],
+            learn: "SMR은 관찰 사망과 기대 사망을 비교하는 표준화 지표입니다.",
+          },
+        ],
+      };
+
+      const [teamName, setTeamName] = useState("");
+      const [teamMembers, setTeamMembers] = useState("");
+      const [joinUrl, setJoinUrl] = useState("");
+      const [current, setCurrent] = useState(0);
+      const [started, setStarted] = useState(false);
+      const [selected, setSelected] = useState({});
+      const [revealed, setRevealed] = useState({});
+      const [showSummary, setShowSummary] = useState(false);
+      const [leaderboard, setLeaderboard] = useState([]);
+      const [submitted, setSubmitted] = useState(false);
+
+      useEffect(() => {
+        setJoinUrl(window.location.href);
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          try {
+            setLeaderboard(JSON.parse(raw));
+          } catch {
+            setLeaderboard([]);
+          }
+        }
+      }, []);
+
+      const step = scenario.steps[current];
+      const totalQuestions = scenario.steps.length;
+
+      const score = useMemo(() => {
+        return scenario.steps.reduce((acc, s) => {
+          const choice = selected[s.id];
+          if (choice == null) return acc;
+          return acc + (s.options[choice]?.correct ? 1 : 0);
+        }, 0);
+      }, [selected]);
+
+      const progress = ((current + (showSummary ? 1 : 0)) / totalQuestions) * 100;
+      const correctIndex = step ? step.options.findIndex((o) => o.correct) : -1;
+      const selectedIndex = step ? selected[step.id] : null;
+      const selectedOption = step && selectedIndex != null ? step.options[selectedIndex] : null;
+      const rank = getRank(score, totalQuestions);
+
+      function chooseOption(index) {
+        if (!step || revealed[step.id]) return;
+        setSelected((prev) => ({ ...prev, [step.id]: index }));
+        setRevealed((prev) => ({ ...prev, [step.id]: true }));
+      }
+
+      function nextStep() {
+        if (!step || selected[step.id] == null) return;
+        if (current < totalQuestions - 1) setCurrent((v) => v + 1);
+        else setShowSummary(true);
+      }
+
+      function prevStep() {
+        if (current > 0) setCurrent((v) => v - 1);
+      }
+
+      function restart() {
+        setStarted(false);
+        setCurrent(0);
+        setSelected({});
+        setRevealed({});
+        setShowSummary(false);
+        setSubmitted(false);
+      }
+
+      function startGame() {
+        setStarted(true);
+        setCurrent(0);
+        setShowSummary(false);
+      }
+
+      function submitScore() {
+        const trimmed = teamName.trim();
+        if (!trimmed || submitted) return;
+        const nextBoard = [
+          ...leaderboard,
+          {
+            team: trimmed,
+            members: teamMembers.trim(),
+            score,
+            total: totalQuestions,
+            percent: Math.round((score / totalQuestions) * 100),
+            rank: rank.label,
+            timestamp: new Date().toISOString(),
+          },
+        ]
+          .sort((a, b) => (b.score - a.score) || (b.percent - a.percent) || a.team.localeCompare(b.team, "ko"))
+          .slice(0, 10);
+
+        setLeaderboard(nextBoard);
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(nextBoard));
+        setSubmitted(true);
+      }
+
+      const qrValue = joinUrl || window.location.href;
+
+      return (
+        <div className="min-h-screen bg-[radial-gradient(circle_at_top,#dbeafe_0%,#f8fafc_35%,#cbd5e1_100%)] text-slate-900">
+          <div className="mx-auto max-w-5xl px-4 py-5 sm:px-6 sm:py-8">
+            <div className="overflow-hidden rounded-[30px] bg-white/95 shadow-[0_25px_80px_rgba(15,23,42,0.18)] ring-1 ring-slate-200 backdrop-blur">
+              <div className="relative overflow-hidden bg-[linear-gradient(135deg,#0f172a_0%,#1d4ed8_52%,#0891b2_100%)] p-6 text-white sm:p-8">
+                <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
+                <div className="absolute left-0 top-12 h-24 w-24 rounded-full bg-cyan-200/20 blur-2xl" />
+                <div className="relative z-10 grid gap-5 lg:grid-cols-[1.2fr_0.8fr] lg:items-start">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.28em] text-cyan-100">역학 및 건강증진 플립 러닝 활동</p>
+                    <h1 className="mt-2 text-3xl font-bold sm:text-4xl">{scenario.title}</h1>
+                    <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-100 sm:text-base">{scenario.mission}</p>
+                    <div className="mt-5 flex flex-wrap gap-2">
+                      {scenario.steps.slice(0, 6).map((s) => (
+                        <span key={s.id} className="rounded-full bg-white/10 px-3 py-1 text-xs text-cyan-50 ring-1 ring-white/15">
+                          {s.clueTitle.split("·")[1]?.trim() || `문항 ${s.id}`}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <StatCard label="환자 수" value={scenario.meta.sick} icon="🧑‍⚕️" />
+                    <StatCard label="입원" value={scenario.meta.hospitalizations} icon="🏥" />
+                    <StatCard label="사망" value={scenario.meta.deaths} icon="⚫" />
+                    <StatCard label="예상 시간" value={scenario.meta.playTime} icon="⏱️" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-b border-slate-200 bg-slate-50 px-4 py-3 sm:px-6">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                      {!started ? "시작 화면" : showSummary ? "최종 결과" : `단서 ${current + 1} / ${totalQuestions}`}
+                    </span>
+                    <span className="text-sm text-slate-600">{scenario.subtitle}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-slate-600">
+                    <span className="font-medium">현재 점수</span>
+                    <span className="rounded-full bg-emerald-100 px-3 py-1 font-bold text-emerald-700">{score} / {totalQuestions}</span>
+                  </div>
+                </div>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 transition-all duration-500"
+                    style={{ width: `${Math.max(progress, 8)}%` }}
+                  />
+                </div>
+              </div>
+
+              {!started ? (
+                <div className="p-4 sm:p-6">
+                  <div className="mx-auto grid max-w-5xl gap-6 lg:grid-cols-[1.08fr_0.92fr]">
+                    <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                      <div className="inline-flex items-center rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
+                        시작 전 안내
+                      </div>
+                      <h2 className="mt-4 text-2xl font-bold text-slate-900">팀 정보를 입력하고 접속을 확인하세요</h2>
+                      <p className="mt-3 leading-7 text-slate-700">
+                        학생들은 먼저 팀 이름과 팀원 이름, 접속 주소, QR 코드를 확인한 뒤 시작합니다. 준비가 끝나면 게임을 시작하세요.
+                      </p>
+
+                      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                        <div>
+                          <label className="mb-1 block text-sm font-semibold text-slate-700">팀 이름</label>
+                          <input
+                            value={teamName}
+                            onChange={(e) => setTeamName(e.target.value)}
+                            placeholder="예: 3조 역학탐정단"
+                            className="w-full rounded-2xl border border-slate-300 px-3 py-3 outline-none transition focus:border-blue-500"
+                          />
+
+                          <label className="mt-4 mb-1 block text-sm font-semibold text-slate-700">팀원 이름</label>
+                          <textarea
+                            value={teamMembers}
+                            onChange={(e) => setTeamMembers(e.target.value)}
+                            placeholder="예: 김민수, 이지은, 박준호"
+                            className="w-full rounded-2xl border border-slate-300 px-3 py-3 outline-none transition focus:border-blue-500"
+                            rows="2"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-sm font-semibold text-slate-700">QR 접속 주소</label>
+                          <input
+                            value={joinUrl}
+                            onChange={(e) => setJoinUrl(e.target.value)}
+                            placeholder="https://..."
+                            className="w-full rounded-2xl border border-slate-300 px-3 py-3 outline-none transition focus:border-blue-500"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                        <QuickInfo label="총 문항" value={`${totalQuestions}문항`} />
+                        <QuickInfo label="예상 시간" value={scenario.meta.playTime} />
+                        <QuickInfo label="진행 방식" value="팀별 경쟁" />
+                      </div>
+
+                      <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm leading-6 text-slate-700">
+                        <p className="font-semibold text-slate-900">진행 순서</p>
+                        <p className="mt-2">1. QR 코드 또는 주소로 접속합니다.</p>
+                        <p>2. 팀 이름과 팀원 이름을 입력합니다.</p>
+                        <p>3. 준비가 끝나면 게임을 시작합니다.</p>
+                      </div>
+
+                      <div className="mt-6 flex flex-wrap gap-3">
+                        <button
+                          onClick={startGame}
+                          className="rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+                        >
+                          게임 시작
+                        </button>
+                        <button
+                          onClick={() => setJoinUrl(window.location.href)}
+                          className="rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                        >
+                          현재 주소 불러오기
+                        </button>
+                      </div>
+                    </section>
+
+                    <section className="rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 to-cyan-50 p-6 shadow-sm">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <h3 className="text-xl font-bold text-slate-900">QR 코드 접속</h3>
+                          <p className="mt-2 text-sm leading-6 text-slate-600">
+                            시작 전에 이 QR 코드로 접속해 같은 링크에서 활동하도록 안내하세요.
+                          </p>
+                        </div>
+                        <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">모바일 최적화</span>
+                      </div>
+
+                      <div className="mt-5 flex flex-col items-center gap-4 rounded-3xl border border-slate-200 bg-white p-5">
+                        <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                          <QRCodeBox value={qrValue} size={190} />
+                        </div>
+                        <p className="break-all text-center text-xs leading-5 text-slate-500">{qrValue || "접속 주소를 입력하세요"}</p>
+                      </div>
+                    </section>
+                  </div>
+                </div>
+              ) : showSummary ? (
+                <div className="p-4 sm:p-6">
+                  <div className="grid gap-6 lg:grid-cols-[1fr_0.95fr]">
+                    <div className="space-y-5">
+                      <section className="rounded-3xl border border-slate-200 bg-gradient-to-br from-blue-50 to-cyan-50 p-6 shadow-sm">
+                        <div className="flex flex-wrap items-center gap-3">
+                          <span className="rounded-full bg-blue-600 px-3 py-1 text-xs font-bold text-white">최종 결과</span>
+                          <span className="rounded-full bg-white px-3 py-1 text-sm font-semibold text-slate-700 ring-1 ring-slate-200">
+                            {teamName.trim() || "팀 이름 미입력"}
+                          </span>
+                        </div>
+                        {teamMembers.trim() && <p className="mt-3 text-sm text-slate-700">팀원: {teamMembers}</p>}
+                        <h2 className="mt-4 text-3xl font-bold text-slate-900">{score} / {totalQuestions}</h2>
+                        <p className="mt-2 text-slate-700">정답률 {Math.round((score / totalQuestions) * 100)}%</p>
+
+                        <div className="mt-5 rounded-3xl border border-amber-200 bg-white p-5 shadow-sm">
+                          <div className="flex items-center gap-4">
+                            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-500 text-2xl text-white shadow-md">
+                              {rank.emoji}
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-amber-700">역학 탐정 등급</p>
+                              <p className="text-2xl font-bold text-slate-900">{rank.label}</p>
+                              <p className="mt-1 text-sm text-slate-600">{rank.description}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mt-5 flex flex-wrap gap-3">
+                          <button
+                            onClick={submitScore}
+                            disabled={submitted || !teamName.trim()}
+                            className="rounded-2xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                          >
+                            {submitted ? "점수 등록 완료" : "팀 점수 등록"}
+                          </button>
+                          <button
+                            onClick={restart}
+                            className="rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+                          >
+                            처음부터 다시 시작
+                          </button>
+                        </div>
+                      </section>
+
+                      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div className="mb-3 flex items-center justify-between">
+                          <h3 className="text-lg font-semibold text-slate-900">문항별 결과 요약</h3>
+                          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-600">내 답 · 정답 · 해석</span>
+                        </div>
+                        <div className="space-y-3">
+                          {scenario.steps.map((s) => {
+                            const chosen = selected[s.id];
+                            const correct = s.options.findIndex((o) => o.correct);
+                            const isRight = chosen != null && chosen === correct;
+                            return (
+                              <div key={s.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                                <div className="flex items-center justify-between gap-3">
+                                  <p className="font-semibold text-slate-900">문항 {s.id}</p>
+                                  <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${isRight ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>
+                                    {isRight ? "정답" : "오답"}
+                                  </span>
+                                </div>
+                                <p className="mt-2 leading-7 text-slate-700">{s.question}</p>
+                                <p className="mt-2 text-sm text-slate-700">내가 선택한 답안: {chosen != null ? s.options[chosen].label : "선택 안함"}</p>
+                                <p className="mt-1 text-sm text-slate-700">정답: {s.options[correct].label}</p>
+                                <p className="mt-2 text-sm leading-6 text-slate-600">정답 해석: {s.options[correct].explanation}</p>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </section>
+                    </div>
+
+                    <div className="space-y-5">
+                      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <div className="flex items-center justify-between gap-3">
+                          <h3 className="text-lg font-semibold text-slate-900">팀별 점수 경쟁</h3>
+                          <span className="rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700">상위 10팀</span>
+                        </div>
+                        <div className="mt-4 space-y-3">
+                          {leaderboard.length === 0 ? (
+                            <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">
+                              아직 등록된 팀 점수가 없습니다.
+                            </div>
+                          ) : (
+                            leaderboard.map((entry, idx) => (
+                              <div
+                                key={`${entry.team}-${idx}`}
+                                className={`flex items-center justify-between rounded-2xl border p-4 ${
+                                  idx === 0 ? "border-amber-300 bg-amber-50" :
+                                  idx === 1 ? "border-slate-300 bg-slate-50" :
+                                  idx === 2 ? "border-orange-300 bg-orange-50" :
+                                  "border-slate-200 bg-white"
+                                }`}
+                              >
+                                <div className="flex items-center gap-3">
+                                  <div
+                                    className={`flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold ${
+                                      idx === 0 ? "bg-amber-500 text-white" :
+                                      idx === 1 ? "bg-slate-500 text-white" :
+                                      idx === 2 ? "bg-orange-500 text-white" :
+                                      "bg-slate-200 text-slate-700"
+                                    }`}
+                                  >
+                                    {idx + 1}
+                                  </div>
+                                  <div>
+                                    <p className="font-semibold text-slate-900">{entry.team}</p>
+                                    <p className="text-xs text-slate-500">{entry.rank}</p>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <p className="font-bold text-slate-900">{entry.score} / {entry.total}</p>
+                                  <p className="text-xs text-slate-500">{entry.percent}%</p>
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </section>
+
+                      <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                        <h3 className="text-lg font-semibold text-slate-900">QR 코드 접속</h3>
+                        <p className="mt-2 text-sm leading-6 text-slate-600">수업 전에 이 링크로 접속했는지 확인하세요.</p>
+                        <div className="mt-4 flex flex-col items-center gap-3 rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                          <div className="rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+                            <QRCodeBox value={qrValue} size={176} />
+                          </div>
+                          <p className="break-all text-center text-xs text-slate-500">{qrValue || "접속 주소 없음"}</p>
+                        </div>
+                      </section>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid gap-6 p-4 sm:p-6 lg:grid-cols-[1.1fr_0.9fr]">
+                  <div className="space-y-5">
+                    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                      <h2 className="text-xl font-bold text-slate-900">{step.clueTitle}</h2>
+                      <p className="mt-3 leading-7 text-slate-700">{step.story}</p>
+                    </section>
+
+                    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                      <div className="mb-3 flex items-center justify-between">
+                        <h3 className="text-base font-semibold text-slate-900">조사 자료</h3>
+                      </div>
+                      <div className="overflow-x-auto rounded-2xl border border-slate-200">
+                        <table className="min-w-full text-sm">
+                          <thead className="bg-slate-900 text-white">
+                            <tr>
+                              {step.data.columns.map((c) => (
+                                <th key={c} className="px-3 py-3 text-left font-semibold">{c}</th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {step.data.rows.map((row, i) => (
+                              <tr key={i} className={i % 2 === 0 ? "bg-white" : "bg-slate-50"}>
+                                {row.map((cell, j) => (
+                                  <td key={j} className="border-t border-slate-200 px-3 py-3">{cell}</td>
+                                ))}
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </section>
+                  </div>
+
+                  <div className="space-y-5">
+                    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                      <h3 className="text-lg font-semibold text-slate-900">문항 {step.id}</h3>
+                      <p className="mt-2 leading-7 text-slate-700">{step.question}</p>
+
+                      <div className="mt-4 space-y-3">
+                        {step.options.map((option, index) => {
+                          const isChosen = selected[step.id] === index;
+                          const wasRevealed = revealed[step.id];
+                          const isCorrect = option.correct;
+                          let className = "w-full rounded-2xl border px-4 py-4 text-left transition-all duration-200 ";
+                          if (!wasRevealed) className += "border-slate-200 bg-white hover:border-blue-400 hover:bg-blue-50 active:scale-[0.99]";
+                          else if (isCorrect) className += "border-emerald-300 bg-emerald-50 shadow-[0_0_0_3px_rgba(16,185,129,0.12)]";
+                          else if (isChosen) className += "border-rose-300 bg-rose-50 shadow-[0_0_0_3px_rgba(244,63,94,0.10)]";
+                          else className += "border-slate-200 bg-slate-50 opacity-80";
+
+                          return (
+                            <button key={index} onClick={() => chooseOption(index)} className={className}>
+                              <div className="flex items-start gap-3">
+                                <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+                                  wasRevealed && isCorrect ? "bg-emerald-600 text-white" :
+                                  wasRevealed && isChosen && !isCorrect ? "bg-rose-600 text-white" :
+                                  "bg-slate-200 text-slate-700"
+                                }`}>
+                                  {String.fromCharCode(65 + index)}
+                                </div>
+                                <div className="leading-7 text-slate-800">{option.label}</div>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </section>
+
+                    {revealed[step.id] && selectedOption ? (
+                      <section className={`rounded-3xl border p-5 shadow-sm transition-all duration-500 ${
+                        selectedOption.correct ? "animate-soft-pulse border-emerald-300 bg-emerald-50" : "animate-soft-bounce border-rose-300 bg-rose-50"
+                      }`}>
+                        <div className="flex items-center gap-3">
+                          <div className={`flex h-11 w-11 items-center justify-center rounded-full text-xl ${selectedOption.correct ? "bg-emerald-600 text-white" : "bg-rose-600 text-white"}`}>
+                            {selectedOption.correct ? "✔" : "!"}
+                          </div>
+                          <div>
+                            <p className={`font-bold ${selectedOption.correct ? "text-emerald-800" : "text-rose-800"}`}>
+                              {selectedOption.correct ? "정답입니다" : "다시 해석해 보세요"}
+                            </p>
+                            <p className="text-sm text-slate-600">
+                              {selectedOption.correct ? "좋아요, 계산과 해석이 맞았습니다." : "내 답과 정답을 비교해 보세요."}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="mt-4 rounded-2xl border border-white/70 bg-white/80 p-4">
+                          <p className="font-semibold text-slate-900">문항 해석</p>
+                          <p className="mt-2 leading-7 text-slate-700">{step.options[correctIndex].explanation}</p>
+                        </div>
+
+                        <div className="mt-4 rounded-2xl border border-sky-200 bg-sky-50 p-4">
+                          <p className="text-sm font-semibold text-sky-950">핵심 포인트</p>
+                          <p className="mt-1 leading-7 text-sky-900">{step.learn}</p>
+                        </div>
+                      </section>
+                    ) : (
+                      <section className="rounded-3xl border border-dashed border-slate-300 bg-slate-50 p-5 text-sm text-slate-500">
+                        답안을 선택하면 문항 해석과 핵심 포인트가 나타납니다.
+                      </section>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {!showSummary && started ? (
+                <div className="flex items-center justify-between gap-3 border-t border-slate-200 bg-slate-50 px-4 py-4 sm:px-6">
+                  <button
+                    onClick={prevStep}
+                    disabled={current === 0}
+                    className="rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    이전
+                  </button>
+                  <button
+                    onClick={nextStep}
+                    disabled={selected[step.id] == null}
+                    className="rounded-2xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+                  >
+                    {current === totalQuestions - 1 ? "결과 보기" : "다음"}
+                  </button>
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+  </script>
+</body>
+</html>
