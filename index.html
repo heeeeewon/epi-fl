@@ -1,443 +1,900 @@
-<!doctype html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>대진대학교 학생 건강검진 탐색</title>
-  <style>
-    :root{
-      --bg1:#dbeafe;--bg2:#eff6ff;--bg3:#f8fafc;--bg4:#e2e8f0;
-      --slate-50:#f8fafc;--slate-100:#f1f5f9;--slate-200:#e2e8f0;--slate-300:#cbd5e1;--slate-400:#94a3b8;--slate-500:#64748b;--slate-600:#475569;--slate-700:#334155;--slate-800:#1e293b;--slate-900:#0f172a;
-      --blue-50:#eff6ff;--blue-100:#dbeafe;--blue-600:#2563eb;--blue-700:#1d4ed8;
-      --emerald-50:#ecfdf5;--emerald-100:#d1fae5;--emerald-600:#059669;--emerald-700:#047857;
-      --rose-50:#fff1f2;--rose-500:#f43f5e;--rose-700:#be123c;
-      --amber-50:#fffbeb;--amber-200:#fde68a;
-      --cyan-50:#ecfeff;--cyan-100:#cffafe;
-      --shadow:0 25px 80px rgba(15,23,42,.18);
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",Arial,sans-serif;background:radial-gradient(circle at top,var(--bg1) 0%,var(--bg2) 28%,var(--bg3) 55%,var(--bg4) 100%);color:var(--slate-900)}
-    button,input,textarea{font:inherit}
-    .wrap{max-width:1200px;margin:0 auto;padding:16px}
-    .shell{overflow:hidden;border:1px solid var(--slate-200);border-radius:32px;background:#fff;box-shadow:var(--shadow)}
-    .hero{position:relative;padding:28px 24px;color:#fff;background:linear-gradient(135deg,#0f172a 0%,#1d4ed8 48%,#0891b2 100%)}
-    .hero:before,.hero:after{content:"";position:absolute;border-radius:999px;filter:blur(40px)}
-    .hero:before{right:-60px;top:-40px;width:180px;height:180px;background:rgba(255,255,255,.08)}
-    .hero:after{left:40px;top:40px;width:120px;height:120px;background:rgba(165,243,252,.18)}
-    .hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:1.2fr .8fr;gap:24px;align-items:end}
-    .eyebrow{font-size:12px;letter-spacing:.28em;color:#cffafe}
-    h1{margin:10px 0 0;font-size:40px;line-height:1.15}
-    .hero p.desc{max-width:760px;color:#e2e8f0;line-height:1.8}
-    .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-    .stat{border-radius:18px;background:rgba(255,255,255,.1);padding:14px;border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(8px)}
-    .stat .k{font-size:12px;color:#e2e8f0}.stat .v{margin-top:8px;font-size:28px;font-weight:800}
-    .topbar{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:16px 24px;border-bottom:1px solid var(--slate-200);background:var(--slate-50)}
-    .pill-row{display:flex;gap:10px;flex-wrap:wrap}
-    .pill{border-radius:999px;padding:10px 16px;border:1px solid var(--slate-300);background:#fff;color:var(--slate-700);font-weight:700;cursor:pointer}
-    .pill.active{background:var(--blue-600);border-color:var(--blue-600);color:#fff}
-    .pill.disabled{background:var(--slate-200);border-color:var(--slate-200);color:var(--slate-500);cursor:not-allowed}
-    .score{font-size:14px;color:var(--slate-600)} .score b{color:var(--slate-900)}
-    .main{display:grid;grid-template-columns:1.05fr .95fr;gap:24px;padding:24px}
-    .card{border:1px solid var(--slate-200);border-radius:24px;background:#fff;padding:24px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
-    .tag{display:inline-flex;border-radius:999px;background:var(--blue-100);color:var(--blue-700);padding:8px 14px;font-size:14px;font-weight:800}
-    h2{margin:18px 0 0;font-size:34px;line-height:1.2}
-    .muted{color:var(--slate-600);line-height:1.9}
-    .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-    label{display:block;margin-bottom:8px;font-size:14px;font-weight:800;color:var(--slate-700)}
-    input,textarea{width:100%;border:1px solid var(--slate-300);border-radius:18px;padding:16px;background:#fff;color:var(--slate-800);outline:none}
-    textarea{min-height:110px;resize:vertical}
-    .small-card{border:1px solid var(--slate-200);background:var(--slate-50);border-radius:24px;padding:16px}
-    .small-card .k{font-size:14px;font-weight:700;color:var(--slate-500)} .small-card .v{margin-top:8px;font-size:34px;font-weight:800}
-    .info-box{margin-top:24px;border:1px solid var(--slate-200);background:var(--slate-50);border-radius:24px;padding:18px}
-    .btn-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
-    .btn{border:none;border-radius:18px;padding:14px 22px;font-weight:800;cursor:pointer}
-    .btn-primary{background:var(--blue-600);color:#fff}.btn-primary:hover{background:var(--blue-700)}
-    .btn-secondary{background:#fff;border:1px solid var(--slate-300);color:var(--slate-700)}
-    .btn-success{background:var(--emerald-600);color:#fff}.btn-success:hover{background:var(--emerald-700)}
-    .btn:disabled{background:var(--slate-300)!important;color:#fff;cursor:not-allowed}
-    .qrbox{border:1px solid #cfeff7;background:rgba(236,254,255,.6)}
-    .qr-placeholder{margin:26px auto 0;width:256px;height:256px;border:1px solid var(--slate-200);border-radius:28px;background:var(--slate-50);display:flex;align-items:center;justify-content:center;color:var(--slate-400);font-size:48px}
-    .map-card{background:var(--slate-50)}
-    .map-head{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:16px}
-    .map-stage{border:1px solid var(--slate-300);background:#fff;padding:12px;border-radius:28px;box-shadow:inset 0 1px 3px rgba(15,23,42,.08)}
-    .map{position:relative;aspect-ratio:1/1;overflow:hidden;border-radius:24px;background:radial-gradient(circle at center,#ecfeff 0%,#dbeafe 42%,#e2e8f0 100%)}
-    .wall{position:absolute;border-radius:12px;background:#1e293b;box-shadow:0 8px 18px rgba(15,23,42,.25)}
-    .hotspot{position:absolute;transform:translate(-50%,-50%);text-align:center}
-    .iconbox{position:relative;width:80px;height:80px;border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:32px;color:#fff;box-shadow:0 18px 32px rgba(15,23,42,.2);border:4px solid rgba(255,255,255,.7);transition:transform .2s ease}
-    .hotspot.near .iconbox{transform:scale(1.08);box-shadow:0 0 0 4px #fde047,0 18px 32px rgba(15,23,42,.24);animation:pulse 1.2s infinite}
-    @keyframes pulse{0%{filter:brightness(1)}50%{filter:brightness(1.08)}100%{filter:brightness(1)}}
-    .done{position:absolute;right:-4px;top:-4px;background:#10b981;color:#fff;border-radius:999px;padding:2px 8px;font-size:10px;font-weight:800}
-    .spotname{margin-top:8px;max-width:90px;border-radius:14px;background:rgba(255,255,255,.95);padding:6px 8px;font-size:10px;font-weight:800;line-height:1.25;color:var(--slate-700);box-shadow:0 2px 6px rgba(15,23,42,.06)}
-    .player{position:absolute;transform:translate(-50%,-50%);width:40px;height:40px;border-radius:999px;background:#111827;color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px rgba(15,23,42,.3)}
-    .msg{margin-top:16px;border-radius:18px;background:#fff;padding:14px 16px;font-size:14px;color:var(--slate-700);box-shadow:0 1px 3px rgba(15,23,42,.06)}
-    .arrows{margin-top:16px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.arrow{border:1px solid var(--slate-300);background:#fff;border-radius:18px;padding:14px;font-size:24px;font-weight:800;color:var(--slate-700);cursor:pointer}
-    .empty{visibility:hidden}
-    .right-panel{min-height:420px}
-    .placeholder{display:flex;min-height:360px;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:1px dashed var(--slate-300);background:var(--slate-50);border-radius:24px;padding:24px}
-    .placeholder .big{font-size:48px}
-    .subcard{margin-top:16px;border:1px solid var(--slate-200);border-radius:24px;padding:18px;background:var(--slate-50)}
-    .subcard.white{background:#fff}
-    ul.clean{list-style:none;padding:0;margin:12px 0 0} ul.clean li{background:var(--slate-50);padding:10px 12px;border-radius:16px;margin-top:8px;line-height:1.8}
-    .qtop{display:flex;justify-content:space-between;gap:12px;align-items:center}
-    .qprompt{margin-top:16px;border:1px solid var(--slate-200);background:var(--slate-50);border-radius:24px;padding:18px}.qprompt p{white-space:pre-line;line-height:1.9;margin:0}
-    .flexwrap{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-    .mini-tag{background:var(--blue-50);color:var(--blue-700);padding:10px 12px;border-radius:16px;font-size:14px}
-    .answer-btn{width:100%;text-align:left;border:1px solid var(--slate-200);background:#fff;border-radius:18px;padding:16px;font-size:14px;line-height:1.8;color:var(--slate-800);cursor:pointer;transition:.15s;margin-top:12px}
-    .answer-btn:hover{background:var(--slate-50)} .answer-btn.correct{border-color:#10b981;background:#ecfdf5;color:#065f46} .answer-btn.wrong{border-color:#f43f5e;background:#fff1f2;color:#881337}
-    .result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.result-box{border-radius:18px;padding:14px;background:var(--slate-50)} .result-box.green{background:var(--emerald-50)} .result-box.blue{background:var(--blue-50)}
-    .result-box .t{font-size:12px;font-weight:800;color:var(--slate-500)} .result-box .v{margin-top:8px;font-size:14px;font-weight:800;line-height:1.7}
-    .summary{margin-top:20px;border:1px solid var(--amber-200);background:var(--amber-50);border-radius:24px;padding:18px}
-    .summary-item{display:flex;justify-content:space-between;gap:12px;background:#fff;padding:12px 14px;border-radius:16px;margin-top:8px;font-size:14px}
-    .ok{color:var(--emerald-700);font-weight:800}.no{color:var(--rose-700);font-weight:800}
-    .hidden{display:none!important}
-    @media (max-width: 980px){
-      .hero-grid,.main{grid-template-columns:1fr}
-      h1{font-size:32px}.stats,.grid3{grid-template-columns:1fr 1fr 1fr}
-    }
-    @media (max-width: 720px){
-      .wrap{padding:10px}.hero,.topbar,.main{padding:16px}
-      .grid2,.grid3,.result-grid,.stats{grid-template-columns:1fr}
-      .topbar{align-items:flex-start;flex-direction:column}
-      h2{font-size:28px}
-      .iconbox{width:68px;height:68px;font-size:28px}
-      .spotname{max-width:78px;font-size:9px}
-      .player{width:36px;height:36px}
-      .qr-placeholder{width:220px;height:220px}
-    }
-  </style>
-</head>
-<body>
-<div class="wrap">
-  <div class="shell">
-    <div class="hero">
-      <div class="hero-grid">
-        <div>
-          <div class="eyebrow">역학 및 건강증진 플립 러닝 활동</div>
-          <h1>대진대학교 학생 건강검진 탐색</h1>
-          <p class="desc">학생 건강검진 현장에서 수집된 정보를 바탕으로 오류, 편향, 교란, 타당도와 신뢰도를 판단하는 분석 활동입니다.</p>
-        </div>
-        <div class="stats">
-          <div class="stat"><div class="k">예상 시간</div><div class="v">30분</div></div>
-          <div class="stat"><div class="k">필수 단서</div><div class="v">4개 이상</div></div>
-          <div class="stat"><div class="k">문항 수</div><div class="v">18문항</div></div>
-        </div>
-      </div>
-    </div>
+import { useEffect, useMemo, useState } from "react";
 
-    <div class="topbar">
-      <div class="pill-row">
-        <button id="tab-intro" class="pill active">시작 화면</button>
-        <button id="tab-map" class="pill">플립러닝 활동</button>
-        <button id="tab-quiz" class="pill disabled">문제 풀이</button>
-      </div>
-      <div class="score">현재 점수 <b id="scoreNow">0</b> / <span id="scoreTotal">18</span></div>
-    </div>
-
-    <div id="view-intro" class="main">
-      <section class="card">
-        <div class="tag">시작 전 안내</div>
-        <h2>팀 정보를 입력하고 활동을 시작하세요</h2>
-        <p class="muted">학생들은 같은 링크로 접속한 뒤 팀 이름과 팀원 이름을 적고 시작합니다. 단서를 4개 이상 수집하면 문제 풀이로 넘어갈 수 있습니다.</p>
-        <div class="grid2" style="margin-top:24px">
-          <div><label>팀 이름</label><input placeholder="예: 3조 역학탐정단"></div>
-          <div><label>접속 주소</label><input id="siteUrlInput" placeholder="배포된 주소를 입력하거나 불러오세요"></div>
-        </div>
-        <div style="margin-top:16px"><label>팀원 이름</label><textarea placeholder="예: 김민수, 이지은, 박준호"></textarea></div>
-        <div class="grid3" style="margin-top:20px">
-          <div class="small-card"><div class="k">총 문항</div><div class="v">18</div></div>
-          <div class="small-card"><div class="k">예상 시간</div><div class="v">30분</div></div>
-          <div class="small-card"><div class="k">진행 방식</div><div class="v">팀별 경쟁</div></div>
-        </div>
-        <div class="info-box">
-          <h3 style="margin:0 0 8px;font-size:20px">진행 순서</h3>
-          <ol class="muted" style="margin:0;padding-left:20px">
-            <li>같은 링크로 접속합니다.</li>
-            <li>팀 이름과 팀원 이름을 입력합니다.</li>
-            <li>탐사 맵에서 단서를 수집합니다.</li>
-            <li>문제를 풀고 점수와 문항별 정오답을 확인합니다.</li>
-          </ol>
-        </div>
-        <div class="btn-row">
-          <button id="startGameBtn" class="btn btn-primary">게임 시작</button>
-          <button id="fillUrlBtn" class="btn btn-secondary">현재 주소 불러오기</button>
-        </div>
-      </section>
-      <section class="card qrbox">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap">
-          <h2 style="font-size:32px;margin:0">QR 코드 접속</h2>
-          <div class="tag" style="background:var(--emerald-100);color:var(--emerald-700)">모바일 최적화</div>
-        </div>
-        <p class="muted">학생들이 태블릿이나 휴대전화로 같은 주소에 접속해 팀별로 함께 활동할 수 있도록 안내하세요.</p>
-        <div class="qr-placeholder" id="qrPlaceholder">QR</div>
-        <p class="muted" style="text-align:center;margin-top:18px">배포된 링크를 QR 코드 생성 사이트에 넣어 사용하세요.</p>
-      </section>
-    </div>
-
-    <div id="view-main" class="main hidden">
-      <section id="mapSection" class="card map-card">
-        <div class="map-head">
-          <div>
-            <h3 style="margin:0;font-size:30px">탐사 맵</h3>
-            <div class="muted" style="font-size:14px">방향 버튼이나 키보드 화살표로 이동한 뒤 조사 버튼을 누르세요.</div>
-          </div>
-          <button id="resetBtn" class="btn btn-secondary" style="padding:10px 16px">전체 초기화</button>
-        </div>
-        <div class="map-stage"><div id="map" class="map"></div></div>
-        <div id="messageBox" class="msg"></div>
-        <div class="arrows">
-          <div class="empty arrow"></div><button class="arrow" data-move="up">↑</button><div class="empty arrow"></div>
-          <button class="arrow" data-move="left">←</button><button id="inspectBtn" class="btn btn-primary" style="padding:14px">조사</button><button class="arrow" data-move="right">→</button>
-          <div class="empty arrow"></div><button class="arrow" data-move="down">↓</button><div class="empty arrow"></div>
-        </div>
-        <button id="goQuizBtn" class="btn btn-success" style="width:100%;margin-top:16px">문제 풀이 시작</button>
-      </section>
-
-      <section class="card right-panel">
-        <div id="mapRightPlaceholder" class="placeholder">
-          <div class="big">🗺️</div>
-          <h3 style="margin:14px 0 0;font-size:24px">현장에 접근하여 단서를 확보하세요</h3>
-          <p class="muted" style="max-width:520px">장소 가까이 접근한 뒤 조사 버튼을 눌러야 단서가 열립니다. 단서를 4개 이상 확보하면 문제 풀이 단계로 넘어갑니다.</p>
-        </div>
-        <div id="clueDetail" class="hidden"></div>
-
-        <div id="quizView" class="hidden"></div>
-      </section>
-    </div>
-  </div>
-</div>
-
-<script>
-const HOTSPOTS = [
-  { id: "testkit", name: "검사실", icon: "🧪", x: 50, y: 18, color: "linear-gradient(135deg,#06b6d4,#3b82f6)", clueTitle: "단서 6. 건강검진 진단검사 결과", clue: "건강검진에서 진단검사 결과가 다음과 같이 정리되었습니다.", data: ["검사 양성: 질병 있음 80명, 질병 없음 20명", "검사 음성: 질병 있음 10명, 질병 없음 90명", "총 200명"] },
-  { id: "bp", name: "신체계측실", icon: "📏", x: 16, y: 18, color: "linear-gradient(135deg,#0ea5e9,#2563eb)", clueTitle: "단서 1. 키·몸무게 측정 기록", clue: "한 학생의 몸무게를 4번 측정했더니 60, 63, 61, 62kg으로 조금씩 달랐습니다.", data: ["측정값이 들쭉날쭉함", "특정 방향으로 치우치지 않음", "평균값은 비슷함"] },
-  { id: "plane", name: "추적관리 분석실", icon: "📊", x: 82, y: 18, color: "linear-gradient(135deg,#f43f5e,#ec4899)", clueTitle: "단서 2. 추적조사 자료", clue: "건강검진 이후 재검진에 참여한 학생들만 분석했더니 특정 질환 비율이 낮게 나타났습니다.", data: ["재검진 참여자만 포함", "중간 탈락자 정보 없음", "결과 왜곡 가능성"] },
-  { id: "survey", name: "생활습관 설문실", icon: "📝", x: 82, y: 82, color: "linear-gradient(135deg,#f59e0b,#f97316)", clueTitle: "단서 3. 생활습관 설문", clue: "흡연 여부를 묻는 설문에서 질병이 있는 학생들이 더 자세히 응답했습니다.", data: ["질병군 응답이 더 자세함", "기억 차이 가능", "조사자가 상태를 알고 있음"] },
-  { id: "icecream", name: "결과 비교실", icon: "📈", x: 50, y: 82, color: "linear-gradient(135deg,#10b981,#0d9488)", clueTitle: "단서 4. 결과 비교", clue: "운동량과 건강점수가 함께 증가하는 경향이 관찰되었습니다.", data: ["두 변수 함께 증가", "직접 인과는 불명확", "제3의 요인 가능"] },
-  { id: "lab", name: "판독실", icon: "🔬", x: 16, y: 82, color: "linear-gradient(135deg,#8b5cf6,#4f46e5)", clueTitle: "단서 5. 판독 결과", clue: "검사자 A는 항상 질병을 낮게 판정하지만 반복할 때마다 비슷한 결과를 냅니다.", data: ["항상 같은 방향으로 오류", "반복 측정은 일관됨", "타당도 문제 가능"] }
-];
-const BLOCKS = [
-  { x: 26, y: 42, w: 8, h: 30 },
-  { x: 58, y: 42, w: 8, h: 30 }
-];
-const QUESTIONS = [
-  { id:0, type:"multiple", category:"응용", prompt:"코호트 연구에서 비노출군에서 질병이 있는 사람들이 더 많이 탈락하였다. 이 경우 상대위험도는 어떻게 왜곡될 가능성이 가장 높은가?", options:["1에 가까워진다","과대평가된다","과소평가된다","영향이 없다"], answer:1, explanation:"비노출군에서 질병자가 탈락하면 비노출군의 질병률이 낮아져 상대위험도가 실제보다 커 보이게 됩니다.", requiredClue:"plane" },
-  { id:1, type:"multiple", category:"오류", prompt:"측정값이 들쭉날쭉하지만 평균은 비슷하다. 어떤 문제가 가장 크다고 볼 수 있는가?", options:["무작위 오류","체계적 오류","교란","선택 바이어스"], answer:0, explanation:"반복 측정값이 일정하지 않으므로 정밀도 문제, 즉 무작위 오류를 우선 생각해야 합니다.", requiredClue:"bp" },
-  { id:2, type:"multiple", category:"선택 바이어스", prompt:"재검진에 참여한 학생만 분석했다면 가장 먼저 의심해야 할 문제는 무엇인가?", options:["선택 바이어스","정보 바이어스","교란","무작위 오류"], answer:0, explanation:"탈락자나 미참여자가 빠지면 연구 대상이 달라져 선택 바이어스가 발생할 수 있습니다.", requiredClue:"plane" },
-  { id:3, type:"multiple", category:"정보 바이어스", prompt:"질병이 있는 학생이 더 자세히 응답했다면 어떤 문제가 생길 가능성이 큰가?", options:["정보 바이어스","선택 바이어스","교란","우연"], answer:0, explanation:"질병 유무에 따라 정보의 정확도가 달라지면 차별적 정보 오류가 생길 수 있습니다.", requiredClue:"survey" },
-  { id:4, type:"multiple", category:"교란", prompt:"운동량과 건강점수의 관계를 해석할 때 가장 먼저 필요한 분석은 무엇인가?", options:["교란 통제","표본 수 확대","단순 평균 비교","무시하고 해석"], answer:0, explanation:"두 변수 사이의 관계처럼 보여도 제3의 요인이 영향을 줄 수 있으므로 교란을 통제해야 합니다.", requiredClue:"icecream" },
-  { id:5, type:"multiple", category:"타당도·신뢰도", prompt:"항상 실제보다 낮게 측정되지만 반복할 때마다 비슷한 값이 나온다면 가장 적절한 해석은 무엇인가?", options:["타당도는 낮고 신뢰도는 높다","타당도와 신뢰도가 모두 높다","둘 다 낮다","판단할 수 없다"], answer:0, explanation:"한 방향으로 지속적으로 틀리므로 타당도는 낮고, 반복 결과가 비슷하므로 신뢰도는 높다고 볼 수 있습니다.", requiredClue:"lab" },
-  { id:6, type:"short", category:"계산형 주관식", prompt:"다음 건강검진 결과표를 보고 양성예측도를 계산하시오. 정답은 숫자만 입력하세요.\n\n질병 있음 / 질병 없음\n검사 양성: 80 / 20\n검사 음성: 10 / 90", shortAnswer:"80", answerDisplay:"80%", explanation:"양성예측도는 검사 양성자 중 실제 질병이 있는 비율이므로 80 / (80 + 20) = 80%입니다.", requiredClue:"testkit" },
-  { id:7, type:"short", category:"계산형 주관식", prompt:"다음 두 판독자의 일치도 자료를 보고 관찰 일치율을 계산하시오. 정답은 백분율 숫자만 입력하세요.\n\n두 판독자 모두 양성 36명\n두 판독자 모두 음성 44명\n불일치 20명\n전체 100명", shortAnswer:"80", answerDisplay:"80%", explanation:"관찰 일치율은 일치한 수 / 전체 수이므로 (36 + 44) / 100 = 80%입니다.", requiredClue:"lab" },
-  { id:8, type:"multiple", category:"일치도", prompt:"두 판독자의 일치 정도를 우연 일치를 보정하여 평가할 때 사용하는 지표는 무엇인가?", options:["카파값","민감도","특이도","유병률"], answer:0, explanation:"카파값은 두 평가자의 일치도를 우연에 의한 일치를 보정하여 나타내는 지표입니다.", requiredClue:"lab" },
-  { id:9, type:"multiple", category:"응용", prompt:"선택 바이어스와 정보 바이어스가 동시에 존재할 때 가장 적절한 해석은 무엇인가?", options:["결과가 왜곡되며 방향 예측도 어렵다","서로 상쇄되어 문제가 없다","결과가 더 정확해진다","영향이 거의 없다"], answer:0, explanation:"서로 다른 오류가 함께 존재하면 결과 왜곡은 더 커질 수 있고 방향도 단순히 예측하기 어렵습니다.", requiredClue:"plane" },
-  { id:10, type:"multiple", category:"응용", prompt:"현재 자료만으로 인과관계를 결론 내리기 어려운 가장 근본적인 이유는 무엇인가?", options:["교란 통제가 충분하지 않다","표본 수가 너무 작다","측정 오류가 하나 있다","그래프가 복잡하다"], answer:0, explanation:"관찰된 관련성이 곧 인과관계는 아니므로 교란 통제가 되지 않으면 인과 추론은 어렵습니다.", requiredClue:"icecream" },
-  { id:11, type:"multiple", category:"응용", prompt:"비차별적 오분류가 발생하면 상대위험도는 일반적으로 어느 방향으로 움직이는가?", options:["1에 가까워진다","더 커진다","반드시 음수가 된다","항상 2배가 된다"], answer:0, explanation:"비차별적 오분류는 실제 연관성을 약하게 만들어 상대위험도가 1에 가까워지는 경향이 있습니다.", requiredClue:"survey" },
-  { id:12, type:"multiple", category:"응용", prompt:"다음 중 연구 결과 해석에서 가장 위험한 실수는 무엇인가?", options:["교란을 무시한 채 인과관계라고 단정한다","표본 수를 함께 제시하지 않는다","그래프를 단순화해서 제시한다","평균을 먼저 살펴본다"], answer:0, explanation:"교란을 무시하고 인과관계라고 해석하면 정책과 실무 판단까지 잘못될 수 있습니다.", requiredClue:"icecream" },
-  { id:13, type:"multiple", category:"응용", prompt:"건강검진 결과를 해석할 때 가장 먼저 점검해야 할 것은 무엇인가?", options:["측정이 정확하게 이루어졌는가","표본 수가 100명 이상인가","그래프 색이 적절한가","유의확률이 0.05보다 작은가"], answer:0, explanation:"측정 자체가 정확하지 않으면 이후의 통계나 해석도 모두 흔들리므로 먼저 측정의 정확성을 확인해야 합니다.", requiredClue:"bp" },
-  { id:14, type:"multiple", category:"응용", prompt:"두 판독자의 관찰 일치율은 90%였지만 카파값은 낮았다. 가장 적절한 해석은 무엇인가?", options:["두 판독자는 매우 신뢰할 수 있다","우연에 의한 일치가 많다","검사 정확도가 높다","표본 수가 부족하다"], answer:1, explanation:"관찰 일치율이 높더라도 카파값이 낮다면 우연에 의한 일치 비율이 높다는 의미입니다.", requiredClue:"lab" },
-  { id:15, type:"short", category:"계산형", prompt:"다음 상황에서 상대위험도를 계산하시오. 정답은 소수 둘째자리까지 입력하세요.\n\n노출군: 질병 있음 40명 / 없음 60명\n비노출군: 질병 있음 10명 / 없음 90명", shortAnswer:"4.00", answerDisplay:"4.00", explanation:"노출군 발생률 = 40/100 = 0.4, 비노출군 발생률 = 10/100 = 0.1 이므로 RR = 0.4 / 0.1 = 4.00 입니다.", requiredClue:"plane" },
-  { id:16, type:"short", category:"계산형", prompt:"유병률이 1%인 집단에서 다음 검사 특성이 주어졌다.\n민감도 90%, 특이도 90%\n\n양성예측도를 계산하시오. 정답은 퍼센트 숫자만 입력하세요.", shortAnswer:"8", answerDisplay:"약 8%", explanation:"10000명을 가정하면 질병 있음 100명, 질병 없음 9900명입니다.\n진양성은 90명, 위양성은 990명이므로 양성예측도는 90 / (90 + 990) ≈ 8% 입니다.", requiredClue:"testkit" },
-  { id:17, type:"short", category:"계산형", prompt:"다음 상황에서 절대위험차(RD)를 계산하시오.\n\n노출군 발생률 30%\n비노출군 발생률 10%", shortAnswer:"20", answerDisplay:"20%", explanation:"절대위험차는 노출군 발생률 - 비노출군 발생률이므로 30% - 10% = 20% 입니다.", requiredClue:"icecream" }
-];
-
-const state = {
-  mode: 'intro',
-  player: {x:10,y:50},
-  visited: [],
-  selected: null,
-  message: '현장을 탐사하며 단서를 수집하세요.',
-  currentQuestion: 0,
-  answers: {},
-  showResult: false,
-  clueDrawerOpen: false,
-  shortAnswerInput: ''
+type Hotspot = {
+  id: string;
+  name: string;
+  icon: string;
+  x: number;
+  y: number;
+  color: string;
+  clueTitle: string;
+  clue: string;
+  data: string[];
 };
 
-function clamp(v,min,max){return Math.min(max,Math.max(min,v));}
-function intersects(ax,ay,size,bx,by,bw,bh){return ax < bx + bw && ax + size > bx && ay < by + bh && ay + size > by;}
-function normalizeShortAnswer(value){return String(value ?? '').trim().replace(/%/g,'');}
-function getScore(){return QUESTIONS.reduce((acc,q,idx)=> acc + (q.type==='short' ? (normalizeShortAnswer(state.answers[idx])===q.shortAnswer?1:0) : (state.answers[idx]===q.answer?1:0)),0);}
-function nearbyHotspot(){const cx=state.player.x+3, cy=state.player.y+3; return HOTSPOTS.find(s=>Math.abs(s.x-cx)<=7 && Math.abs(s.y-cy)<=7) || null;}
-function currentClue(){return HOTSPOTS.find(h=>h.id===state.selected) || null;}
-function relatedClue(){return HOTSPOTS.find(h=>h.id===QUESTIONS[state.currentQuestion].requiredClue) || null;}
-function ready(){return state.visited.length >= 4;}
-function setMode(mode){state.mode=mode; render();}
-function movePlayer(dx,dy){if(state.mode!=='map') return; const next={x:clamp(state.player.x+dx,2,92),y:clamp(state.player.y+dy,2,92)}; const blocked=BLOCKS.some(b=>intersects(next.x,next.y,6,b.x,b.y,b.w,b.h)); if(blocked){state.message='벽에 막혀 이동할 수 없습니다.'; render(); return;} state.player=next; state.message='이동했습니다. 장소 가까이 가면 조사할 수 있습니다.'; render();}
-function inspectNearby(){if(state.mode!=='map') return; const near=nearbyHotspot(); if(!near){state.message='주변에 조사 가능한 장소가 없습니다. 다른 곳으로 이동해 보세요.'; render(); return;} state.selected=near.id; if(!state.visited.includes(near.id)) state.visited.push(near.id); state.message=`${near.name} 단서를 확보했습니다.`; render();}
-function goQuiz(){if(!ready()) return; state.mode='quiz'; state.selected=null; state.showResult=false; state.clueDrawerOpen=false; state.shortAnswerInput=''; state.message='문제 풀이 단계로 이동했습니다.'; render();}
-function chooseAnswer(index){if(state.showResult) return; state.answers[state.currentQuestion]=index; state.showResult=true; render();}
-function submitShort(){if(state.showResult) return; const normalized=normalizeShortAnswer(state.shortAnswerInput); if(!normalized) return; state.answers[state.currentQuestion]=normalized; state.showResult=true; render();}
-function nextQuestion(){state.showResult=false; state.clueDrawerOpen=false; state.shortAnswerInput=''; if(state.currentQuestion < QUESTIONS.length-1) state.currentQuestion += 1; render();}
-function resetAll(){state.mode='intro'; state.player={x:10,y:50}; state.visited=[]; state.selected=null; state.message='현장을 탐사하며 단서를 수집하세요.'; state.currentQuestion=0; state.answers={}; state.showResult=false; state.clueDrawerOpen=false; state.shortAnswerInput=''; render();}
+type MultipleQuestion = {
+  id: number;
+  type: "multiple";
+  category: string;
+  prompt: string;
+  options: string[];
+  answer: number;
+  explanation: string;
+  requiredClue: string;
+};
 
-function renderMap(){
-  const map = document.getElementById('map');
-  map.innerHTML='';
-  BLOCKS.forEach((b)=>{const d=document.createElement('div'); d.className='wall'; d.style.left=b.x+'%'; d.style.top=b.y+'%'; d.style.width=b.w+'%'; d.style.height=b.h+'%'; map.appendChild(d);});
-  const near = nearbyHotspot();
-  HOTSPOTS.forEach((spot)=>{
-    const wrap=document.createElement('div'); wrap.className='hotspot'+(near && near.id===spot.id?' near':''); wrap.style.left=spot.x+'%'; wrap.style.top=spot.y+'%';
-    const icon=document.createElement('div'); icon.className='iconbox'; icon.style.background=spot.color; icon.textContent=spot.icon;
-    if(state.visited.includes(spot.id)){const done=document.createElement('div'); done.className='done'; done.textContent='완료'; icon.appendChild(done);} 
-    const name=document.createElement('div'); name.className='spotname'; name.textContent=spot.name;
-    wrap.append(icon,name); map.appendChild(wrap);
-  });
-  const p=document.createElement('div'); p.className='player'; p.style.left=state.player.x+'%'; p.style.top=state.player.y+'%'; p.textContent='🧑'; map.appendChild(p);
+type ShortQuestion = {
+  id: number;
+  type: "short";
+  category: string;
+  prompt: string;
+  shortAnswer: string;
+  answerDisplay: string;
+  explanation: string;
+  requiredClue: string;
+};
+
+type Question = MultipleQuestion | ShortQuestion;
+
+const HOTSPOTS: Hotspot[] = [
+  {
+    id: "testkit",
+    name: "검사실",
+    icon: "🧪",
+    x: 50,
+    y: 18,
+    color: "from-cyan-500 to-blue-500",
+    clueTitle: "단서 6. 건강검진 진단검사 결과",
+    clue: "건강검진에서 진단검사 결과가 다음과 같이 정리되었습니다.",
+    data: [
+      "검사 양성: 질병 있음 80명, 질병 없음 20명",
+      "검사 음성: 질병 있음 10명, 질병 없음 90명",
+      "총 200명",
+    ],
+  },
+  {
+    id: "bp",
+    name: "신체계측실",
+    icon: "📏",
+    x: 16,
+    y: 18,
+    color: "from-sky-500 to-blue-600",
+    clueTitle: "단서 1. 키·몸무게 측정 기록",
+    clue: "한 학생의 몸무게를 4번 측정했더니 60, 63, 61, 62kg으로 조금씩 달랐습니다.",
+    data: [
+      "측정값이 들쭉날쭉함",
+      "특정 방향으로 치우치지 않음",
+      "평균값은 비슷함",
+    ],
+  },
+  {
+    id: "plane",
+    name: "추적관리 분석실",
+    icon: "📊",
+    x: 82,
+    y: 18,
+    color: "from-rose-500 to-pink-600",
+    clueTitle: "단서 2. 추적조사 자료",
+    clue: "건강검진 이후 재검진에 참여한 학생들만 분석했더니 특정 질환 비율이 낮게 나타났습니다.",
+    data: ["재검진 참여자만 포함", "중간 탈락자 정보 없음", "결과 왜곡 가능성"],
+  },
+  {
+    id: "survey",
+    name: "생활습관 설문실",
+    icon: "📝",
+    x: 82,
+    y: 82,
+    color: "from-amber-500 to-orange-500",
+    clueTitle: "단서 3. 생활습관 설문",
+    clue: "흡연 여부를 묻는 설문에서 질병이 있는 학생들이 더 자세히 응답했습니다.",
+    data: ["질병군 응답이 더 자세함", "기억 차이 가능", "조사자가 상태를 알고 있음"],
+  },
+  {
+    id: "icecream",
+    name: "결과 비교실",
+    icon: "📈",
+    x: 50,
+    y: 82,
+    color: "from-emerald-500 to-teal-600",
+    clueTitle: "단서 4. 결과 비교",
+    clue: "운동량과 건강점수가 함께 증가하는 경향이 관찰되었습니다.",
+    data: ["두 변수 함께 증가", "직접 인과는 불명확", "제3의 요인 가능"],
+  },
+  {
+    id: "lab",
+    name: "판독실",
+    icon: "🔬",
+    x: 16,
+    y: 82,
+    color: "from-violet-500 to-indigo-600",
+    clueTitle: "단서 5. 판독 결과",
+    clue: "검사자 A는 항상 질병을 낮게 판정하지만 반복할 때마다 비슷한 결과를 냅니다.",
+    data: ["항상 같은 방향으로 오류", "반복 측정은 일관됨", "타당도 문제 가능"],
+  },
+];
+
+const BLOCKS = [
+  // 신체계측실과 판독실 사이 세로 벽
+  { x: 26, y: 42, w: 8, h: 30 },
+  // 검사실과 결과 비교실 사이 세로 벽
+  { x: 58, y: 42, w: 8, h: 30 },
+];
+
+const QUESTIONS: Question[] = [
+  {
+    id: 0,
+    type: "multiple",
+    category: "응용",
+    prompt: "코호트 연구에서 비노출군에서 질병이 있는 사람들이 더 많이 탈락하였다. 이 경우 상대위험도는 어떻게 왜곡될 가능성이 가장 높은가?",
+    options: ["1에 가까워진다", "과대평가된다", "과소평가된다", "영향이 없다"],
+    answer: 1,
+    explanation: "비노출군에서 질병자가 탈락하면 비노출군의 질병률이 낮아져 상대위험도가 실제보다 커 보이게 됩니다.",
+    requiredClue: "plane",
+  },
+  {
+    id: 1,
+    type: "multiple",
+    category: "오류",
+    prompt: "측정값이 들쭉날쭉하지만 평균은 비슷하다. 어떤 문제가 가장 크다고 볼 수 있는가?",
+    options: ["무작위 오류", "체계적 오류", "교란", "선택 바이어스"],
+    answer: 0,
+    explanation: "반복 측정값이 일정하지 않으므로 정밀도 문제, 즉 무작위 오류를 우선 생각해야 합니다.",
+    requiredClue: "bp",
+  },
+  {
+    id: 2,
+    type: "multiple",
+    category: "선택 바이어스",
+    prompt: "재검진에 참여한 학생만 분석했다면 가장 먼저 의심해야 할 문제는 무엇인가?",
+    options: ["선택 바이어스", "정보 바이어스", "교란", "무작위 오류"],
+    answer: 0,
+    explanation: "탈락자나 미참여자가 빠지면 연구 대상이 달라져 선택 바이어스가 발생할 수 있습니다.",
+    requiredClue: "plane",
+  },
+  {
+    id: 3,
+    type: "multiple",
+    category: "정보 바이어스",
+    prompt: "질병이 있는 학생이 더 자세히 응답했다면 어떤 문제가 생길 가능성이 큰가?",
+    options: ["정보 바이어스", "선택 바이어스", "교란", "우연"],
+    answer: 0,
+    explanation: "질병 유무에 따라 정보의 정확도가 달라지면 차별적 정보 오류가 생길 수 있습니다.",
+    requiredClue: "survey",
+  },
+  {
+    id: 4,
+    type: "multiple",
+    category: "교란",
+    prompt: "운동량과 건강점수의 관계를 해석할 때 가장 먼저 필요한 분석은 무엇인가?",
+    options: ["교란 통제", "표본 수 확대", "단순 평균 비교", "무시하고 해석"],
+    answer: 0,
+    explanation: "두 변수 사이의 관계처럼 보여도 제3의 요인이 영향을 줄 수 있으므로 교란을 통제해야 합니다.",
+    requiredClue: "icecream",
+  },
+  {
+    id: 5,
+    type: "multiple",
+    category: "타당도·신뢰도",
+    prompt: "항상 실제보다 낮게 측정되지만 반복할 때마다 비슷한 값이 나온다면 가장 적절한 해석은 무엇인가?",
+    options: ["타당도는 낮고 신뢰도는 높다", "타당도와 신뢰도가 모두 높다", "둘 다 낮다", "판단할 수 없다"],
+    answer: 0,
+    explanation: "한 방향으로 지속적으로 틀리므로 타당도는 낮고, 반복 결과가 비슷하므로 신뢰도는 높다고 볼 수 있습니다.",
+    requiredClue: "lab",
+  },
+  {
+    id: 6,
+    type: "short",
+    category: "계산형 주관식",
+    prompt: `다음 건강검진 결과표를 보고 양성예측도를 계산하시오. 정답은 숫자만 입력하세요.
+
+질병 있음 / 질병 없음
+검사 양성: 80 / 20
+검사 음성: 10 / 90`,
+    shortAnswer: "80",
+    answerDisplay: "80%",
+    explanation: "양성예측도는 검사 양성자 중 실제 질병이 있는 비율이므로 80 / (80 + 20) = 80%입니다.",
+    requiredClue: "testkit",
+  },
+  {
+    id: 7,
+    type: "short",
+    category: "계산형 주관식",
+    prompt: `다음 두 판독자의 일치도 자료를 보고 관찰 일치율을 계산하시오. 정답은 백분율 숫자만 입력하세요.
+
+두 판독자 모두 양성 36명
+두 판독자 모두 음성 44명
+불일치 20명
+전체 100명`,
+    shortAnswer: "80",
+    answerDisplay: "80%",
+    explanation: "관찰 일치율은 일치한 수 / 전체 수이므로 (36 + 44) / 100 = 80%입니다.",
+    requiredClue: "lab",
+  },
+  {
+    id: 8,
+    type: "multiple",
+    category: "일치도",
+    prompt: "두 판독자의 일치 정도를 우연 일치를 보정하여 평가할 때 사용하는 지표는 무엇인가?",
+    options: ["카파값", "민감도", "특이도", "유병률"],
+    answer: 0,
+    explanation: "카파값은 두 평가자의 일치도를 우연에 의한 일치를 보정하여 나타내는 지표입니다.",
+    requiredClue: "lab",
+  },
+  {
+    id: 9,
+    type: "multiple",
+    category: "응용",
+    prompt: "선택 바이어스와 정보 바이어스가 동시에 존재할 때 가장 적절한 해석은 무엇인가?",
+    options: ["결과가 왜곡되며 방향 예측도 어렵다", "서로 상쇄되어 문제가 없다", "결과가 더 정확해진다", "영향이 거의 없다"],
+    answer: 0,
+    explanation: "서로 다른 오류가 함께 존재하면 결과 왜곡은 더 커질 수 있고 방향도 단순히 예측하기 어렵습니다.",
+    requiredClue: "plane",
+  },
+  {
+    id: 10,
+    type: "multiple",
+    category: "응용",
+    prompt: "현재 자료만으로 인과관계를 결론 내리기 어려운 가장 근본적인 이유는 무엇인가?",
+    options: ["교란 통제가 충분하지 않다", "표본 수가 너무 작다", "측정 오류가 하나 있다", "그래프가 복잡하다"],
+    answer: 0,
+    explanation: "관찰된 관련성이 곧 인과관계는 아니므로 교란 통제가 되지 않으면 인과 추론은 어렵습니다.",
+    requiredClue: "icecream",
+  },
+  {
+    id: 11,
+    type: "multiple",
+    category: "응용",
+    prompt: "비차별적 오분류가 발생하면 상대위험도는 일반적으로 어느 방향으로 움직이는가?",
+    options: ["1에 가까워진다", "더 커진다", "반드시 음수가 된다", "항상 2배가 된다"],
+    answer: 0,
+    explanation: "비차별적 오분류는 실제 연관성을 약하게 만들어 상대위험도가 1에 가까워지는 경향이 있습니다.",
+    requiredClue: "survey",
+  },
+  {
+    id: 12,
+    type: "multiple",
+    category: "응용",
+    prompt: "다음 중 연구 결과 해석에서 가장 위험한 실수는 무엇인가?",
+    options: ["교란을 무시한 채 인과관계라고 단정한다", "표본 수를 함께 제시하지 않는다", "그래프를 단순화해서 제시한다", "평균을 먼저 살펴본다"],
+    answer: 0,
+    explanation: "교란을 무시하고 인과관계라고 해석하면 정책과 실무 판단까지 잘못될 수 있습니다.",
+    requiredClue: "icecream",
+  },
+  {
+    id: 13,
+    type: "multiple",
+    category: "응용",
+    prompt: "건강검진 결과를 해석할 때 가장 먼저 점검해야 할 것은 무엇인가?",
+    options: ["측정이 정확하게 이루어졌는가", "표본 수가 100명 이상인가", "그래프 색이 적절한가", "유의확률이 0.05보다 작은가"],
+    answer: 0,
+    explanation: "측정 자체가 정확하지 않으면 이후의 통계나 해석도 모두 흔들리므로 먼저 측정의 정확성을 확인해야 합니다.",
+    requiredClue: "bp",
+  },
+  {
+    id: 14,
+    type: "multiple",
+    category: "응용",
+    prompt: "두 판독자의 관찰 일치율은 90%였지만 카파값은 낮았다. 가장 적절한 해석은 무엇인가?",
+    options: ["두 판독자는 매우 신뢰할 수 있다", "우연에 의한 일치가 많다", "검사 정확도가 높다", "표본 수가 부족하다"],
+    answer: 1,
+    explanation: "관찰 일치율이 높더라도 카파값이 낮다면 우연에 의한 일치 비율이 높다는 의미입니다.",
+    requiredClue: "lab",
+  },
+  {
+    id: 15,
+    type: "short",
+    category: "계산형",
+    prompt: `다음 상황에서 상대위험도를 계산하시오. 정답은 소수 둘째자리까지 입력하세요.
+
+노출군: 질병 있음 40명 / 없음 60명
+비노출군: 질병 있음 10명 / 없음 90명`,
+    shortAnswer: "4.00",
+    answerDisplay: "4.00",
+    explanation: "노출군 발생률 = 40/100 = 0.4, 비노출군 발생률 = 10/100 = 0.1 이므로 RR = 0.4 / 0.1 = 4.00 입니다.",
+    requiredClue: "plane",
+  },
+  {
+    id: 16,
+    type: "short",
+    category: "계산형",
+    prompt: `유병률이 1%인 집단에서 다음 검사 특성이 주어졌다.
+민감도 90%, 특이도 90%
+
+양성예측도를 계산하시오. 정답은 퍼센트 숫자만 입력하세요.`,
+    shortAnswer: "8",
+    answerDisplay: "약 8%",
+    explanation: `10000명을 가정하면 질병 있음 100명, 질병 없음 9900명입니다.
+진양성은 90명, 위양성은 990명이므로 양성예측도는 90 / (90 + 990) ≈ 8% 입니다.`,
+    requiredClue: "testkit",
+  },
+  {
+    id: 17,
+    type: "short",
+    category: "계산형",
+    prompt: `다음 상황에서 절대위험차(RD)를 계산하시오.
+
+노출군 발생률 30%
+비노출군 발생률 10%`,
+    shortAnswer: "20",
+    answerDisplay: "20%",
+    explanation: "절대위험차는 노출군 발생률 - 비노출군 발생률이므로 30% - 10% = 20% 입니다.",
+    requiredClue: "icecream",
+  },
+];
+
+const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
+
+function intersects(ax: number, ay: number, size: number, bx: number, by: number, bw: number, bh: number) {
+  return ax < bx + bw && ax + size > bx && ay < by + bh && ay + size > by;
 }
 
-function renderCluePanel(){
-  const clue = currentClue();
-  const placeholder = document.getElementById('mapRightPlaceholder');
-  const detail = document.getElementById('clueDetail');
-  if(state.mode!=='map'){placeholder.classList.add('hidden'); detail.classList.add('hidden'); return;}
-  if(!clue){placeholder.classList.remove('hidden'); detail.classList.add('hidden'); return;}
-  placeholder.classList.add('hidden'); detail.classList.remove('hidden');
-  detail.innerHTML = `
-    <div style="display:flex;gap:12px;align-items:center">
-      <div style="width:48px;height:48px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;background:${clue.color};box-shadow:0 4px 12px rgba(15,23,42,.12)">${clue.icon}</div>
-      <div><h3 style="margin:0;font-size:24px">${clue.clueTitle}</h3><div style="font-size:14px;color:var(--slate-500)">현장 단서와 조사 자료를 확인하세요.</div></div>
-    </div>
-    <div class="subcard"><div style="font-size:13px;font-weight:800">현장 메모</div><div class="muted" style="margin-top:6px">${clue.clue}</div></div>
-    <div class="subcard white"><div style="font-size:13px;font-weight:800">수집된 자료</div><ul class="clean">${clue.data.map(item=>`<li>• ${item}</li>`).join('')}</ul></div>
-  `;
+function normalizeShortAnswer(value: string) {
+  return value.trim().replace(/%/g, "");
 }
 
-function renderQuiz(){
-  const quiz = document.getElementById('quizView');
-  const q = QUESTIONS[state.currentQuestion];
-  const r = relatedClue();
-  if(state.mode!=='quiz'){quiz.classList.add('hidden'); return;}
-  quiz.classList.remove('hidden');
-  const answered = state.answers[state.currentQuestion] !== undefined;
-  const myAnswer = state.answers[state.currentQuestion];
-  const myCorrect = q.type==='short' ? normalizeShortAnswer(myAnswer)===q.shortAnswer : myAnswer===q.answer;
-  let answersHtml = '';
-  if(q.type==='multiple'){
-    answersHtml = q.options.map((opt,idx)=>{
-      const chosen = myAnswer===idx;
-      const reveal = state.showResult && answered;
-      const correct = idx===q.answer;
-      const cls = reveal && correct ? 'answer-btn correct' : (reveal && chosen && !correct ? 'answer-btn wrong' : 'answer-btn');
-      return `<button class="${cls}" data-answer="${idx}" ${state.showResult?'disabled':''}><b>${String.fromCharCode(65+idx)}.</b> ${opt}</button>`;
-    }).join('');
-  } else {
-    answersHtml = `
-      <div class="subcard">
-        <label>정답 입력</label>
-        <div class="btn-row" style="margin-top:12px;align-items:stretch">
-          <input id="shortInput" value="${state.shortAnswerInput.replace(/"/g,'&quot;')}" placeholder="숫자만 입력" ${state.showResult?'disabled':''}>
-          <button id="submitShortBtn" class="btn btn-primary" ${state.showResult || !state.shortAnswerInput.trim() ? 'disabled':''}>제출</button>
+const sanityChecks = [
+  QUESTIONS.length === 18,
+  new Set(QUESTIONS.map((q) => q.id)).size === QUESTIONS.length,
+  new Set(HOTSPOTS.map((h) => h.id)).size === HOTSPOTS.length,
+].every(Boolean);
+
+export default function EpiRpgPreview() {
+  const [mode, setMode] = useState<"intro" | "map" | "quiz">("intro");
+  const [player, setPlayer] = useState({ x: 10, y: 50 });
+  const [visited, setVisited] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string | null>(null);
+  const [message, setMessage] = useState("현장을 탐사하며 단서를 수집하세요.");
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState<Record<number, number | string>>({});
+  const [showResult, setShowResult] = useState(false);
+  const [clueDrawerOpen, setClueDrawerOpen] = useState(false);
+  const [shortAnswerInput, setShortAnswerInput] = useState("");
+
+  const currentClue = HOTSPOTS.find((item) => item.id === selected) || null;
+  const question = QUESTIONS[currentQuestion];
+  const relatedClue = HOTSPOTS.find((item) => item.id === question.requiredClue) || null;
+  const ready = visited.length >= 4;
+
+  const score = useMemo(() => {
+    return QUESTIONS.reduce((acc, item, idx) => {
+      if (item.type === "short") {
+        return acc + (normalizeShortAnswer(String(answers[idx] ?? "")) === item.shortAnswer ? 1 : 0);
+      }
+      return acc + (answers[idx] === item.answer ? 1 : 0);
+    }, 0);
+  }, [answers]);
+
+  const nearbyHotspot = useMemo(() => {
+    const centerX = player.x + 3;
+    const centerY = player.y + 3;
+    return HOTSPOTS.find((spot) => Math.abs(spot.x - centerX) <= 7 && Math.abs(spot.y - centerY) <= 7) || null;
+  }, [player]);
+
+  const movePlayer = (dx: number, dy: number) => {
+    if (mode !== "map") return;
+
+    setPlayer((prev) => {
+      const next = {
+        x: clamp(prev.x + dx, 2, 92),
+        y: clamp(prev.y + dy, 2, 92),
+      };
+
+      const blocked = BLOCKS.some((block) => intersects(next.x, next.y, 6, block.x, block.y, block.w, block.h));
+      if (blocked) {
+        setMessage("벽에 막혀 이동할 수 없습니다.");
+        return prev;
+      }
+
+      setMessage("이동했습니다. 장소 가까이 가면 조사할 수 있습니다.");
+      return next;
+    });
+  };
+
+  const inspectNearby = () => {
+    if (mode !== "map") return;
+    if (!nearbyHotspot) {
+      setMessage("주변에 조사 가능한 장소가 없습니다. 다른 곳으로 이동해 보세요.");
+      return;
+    }
+
+    setSelected(nearbyHotspot.id);
+    setVisited((prev) => (prev.includes(nearbyHotspot.id) ? prev : [...prev, nearbyHotspot.id]));
+    setMessage(`${nearbyHotspot.name} 단서를 확보했습니다.`);
+  };
+
+  const goToQuestions = () => {
+    if (!ready) return;
+    setMode("quiz");
+    setSelected(null);
+    setShowResult(false);
+    setClueDrawerOpen(false);
+    setShortAnswerInput("");
+    setMessage("문제 풀이 단계로 이동했습니다.");
+  };
+
+  const chooseAnswer = (index: number) => {
+    if (showResult) return;
+    setAnswers((prev) => ({ ...prev, [currentQuestion]: index }));
+    setShowResult(true);
+  };
+
+  const submitShortAnswer = () => {
+    if (showResult) return;
+    const normalized = normalizeShortAnswer(shortAnswerInput);
+    if (!normalized) return;
+    setAnswers((prev) => ({ ...prev, [currentQuestion]: normalized }));
+    setShowResult(true);
+  };
+
+  const nextQuestion = () => {
+    setShowResult(false);
+    setClueDrawerOpen(false);
+    setShortAnswerInput("");
+    if (currentQuestion < QUESTIONS.length - 1) {
+      setCurrentQuestion((prev) => prev + 1);
+    }
+  };
+
+  const resetAll = () => {
+    setMode("intro");
+    setPlayer({ x: 10, y: 50 });
+    setVisited([]);
+    setSelected(null);
+    setMessage("현장을 탐사하며 단서를 수집하세요.");
+    setCurrentQuestion(0);
+    setAnswers({});
+    setShowResult(false);
+    setClueDrawerOpen(false);
+    setShortAnswerInput("");
+  };
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "Enter", " "].includes(event.key)) return;
+      event.preventDefault();
+      if (mode !== "map") return;
+
+      if (event.key === "ArrowUp") movePlayer(0, -4);
+      if (event.key === "ArrowDown") movePlayer(0, 4);
+      if (event.key === "ArrowLeft") movePlayer(-4, 0);
+      if (event.key === "ArrowRight") movePlayer(4, 0);
+      if (event.key === "Enter" || event.key === " ") inspectNearby();
+    };
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [mode, nearbyHotspot]);
+
+  if (!sanityChecks) {
+    return (
+      <div className="min-h-screen bg-slate-100 p-8">
+        <div className="mx-auto max-w-2xl rounded-3xl border border-rose-200 bg-white p-8 shadow-sm">
+          <h1 className="text-2xl font-bold text-rose-700">구성 점검 오류</h1>
+          <p className="mt-3 leading-7 text-slate-700">문항 수 또는 고유 ID 구성에 문제가 있습니다. 데이터를 점검해 주세요.</p>
         </div>
-      </div>`;
+      </div>
+    );
   }
 
-  const clueDrawer = state.clueDrawerOpen && r ? `
-    <div class="subcard" style="border-color:#a5f3fc;background:rgba(236,254,255,.7)">
-      <div style="display:flex;gap:10px;align-items:center">
-        <div style="width:40px;height:40px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;background:${r.color}">${r.icon}</div>
-        <div><div style="font-size:14px;font-weight:800">${r.clueTitle}</div><div style="font-size:12px;color:var(--slate-500)">문항 풀이 중 다시 열람 가능한 현장 자료</div></div>
-      </div>
-      <div class="subcard white"><div style="font-size:12px;font-weight:800;color:var(--slate-500)">현장 메모</div><div class="muted" style="margin-top:6px">${r.clue}</div></div>
-      <div class="subcard white"><div style="font-size:12px;font-weight:800;color:var(--slate-500)">수집된 자료</div><ul class="clean">${r.data.map(item=>`<li>• ${item}</li>`).join('')}</ul></div>
-    </div>` : '';
+  return (
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,#dbeafe_0%,#eff6ff_28%,#f8fafc_55%,#e2e8f0_100%)] p-4 md:p-8">
+      <div className="mx-auto max-w-6xl overflow-hidden rounded-[32px] border border-slate-200 bg-white shadow-[0_25px_80px_rgba(15,23,42,0.18)]">
+        <div className="relative overflow-hidden bg-[linear-gradient(135deg,#0f172a_0%,#1d4ed8_48%,#0891b2_100%)] px-6 py-8 text-white md:px-8">
+          <div className="absolute -right-16 -top-12 h-48 w-48 rounded-full bg-white/10 blur-3xl" />
+          <div className="absolute left-10 top-12 h-28 w-28 rounded-full bg-cyan-200/20 blur-2xl" />
+          <div className="relative z-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-end">
+            <div>
+              <p className="text-xs uppercase tracking-[0.28em] text-cyan-100">역학 및 건강증진 플립 러닝 활동</p>
+              <h1 className="mt-3 text-3xl font-bold md:text-4xl">대진대학교 학생 건강검진 탐색</h1>
+              <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-100 md:text-base">
+                학생 건강검진 현장에서 수집된 정보를 바탕으로 오류, 편향, 교란, 타당도와 신뢰도를 판단하는 분석 활동입니다.
+              </p>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+              <div className="rounded-2xl bg-white/10 px-4 py-3 ring-1 ring-white/15 backdrop-blur-sm">
+                <div className="text-xs uppercase tracking-wide text-slate-200">예상 시간</div>
+                <div className="mt-2 text-2xl font-bold">30분</div>
+              </div>
+              <div className="rounded-2xl bg-white/10 px-4 py-3 ring-1 ring-white/15 backdrop-blur-sm">
+                <div className="text-xs uppercase tracking-wide text-slate-200">필수 단서</div>
+                <div className="mt-2 text-2xl font-bold">4개 이상</div>
+              </div>
+              <div className="rounded-2xl bg-white/10 px-4 py-3 ring-1 ring-white/15 backdrop-blur-sm">
+                <div className="text-xs uppercase tracking-wide text-slate-200">문항 수</div>
+                <div className="mt-2 text-2xl font-bold">18문항</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-  const resultHtml = state.showResult && answered ? `
-    <div class="subcard white">
-      <div class="result-grid">
-        <div class="result-box"><div class="t">내가 선택한 답안</div><div class="v">${q.type==='short' ? myAnswer : `${String.fromCharCode(65+Number(myAnswer))}. ${q.options[Number(myAnswer)]}`}</div></div>
-        <div class="result-box green"><div class="t" style="color:var(--emerald-700)">정답</div><div class="v">${q.type==='short' ? q.answerDisplay : `${String.fromCharCode(65+q.answer)}. ${q.options[q.answer]}`}</div></div>
-        <div class="result-box blue"><div class="t" style="color:var(--blue-700)">채점</div><div class="v">${myCorrect?'정답':'오답'}</div></div>
-      </div>
-      <div class="subcard" style="margin-top:16px"><div style="font-size:12px;font-weight:800;color:var(--slate-500)">문항 해석</div><div class="muted" style="white-space:pre-line;margin-top:6px">${q.explanation}</div></div>
-      <div class="btn-row">
-        ${state.currentQuestion < QUESTIONS.length-1 ? `<button id="nextQBtn" class="btn btn-primary">다음 문항</button>` : `<button id="backStartBtn" class="btn btn-success">처음으로 돌아가기</button>`}
-        <button id="backToMapBtn" class="btn btn-secondary">단서 다시 보기</button>
-      </div>
-    </div>` : '';
+        <div className="border-b border-slate-200 bg-slate-50 px-6 py-4 md:px-8">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="flex flex-wrap items-center gap-3">
+              <button onClick={() => setMode("intro")} className={`rounded-full px-4 py-2 text-sm font-semibold ${mode === "intro" ? "bg-blue-600 text-white" : "border border-slate-300 bg-white text-slate-700"}`}>
+                시작 화면
+              </button>
+              <button onClick={() => setMode("map")} className={`rounded-full px-4 py-2 text-sm font-semibold ${mode === "map" ? "bg-blue-600 text-white" : "border border-slate-300 bg-white text-slate-700"}`}>
+                플립러닝 활동
+              </button>
+              <button onClick={() => ready && setMode("quiz")} className={`rounded-full px-4 py-2 text-sm font-semibold ${mode === "quiz" ? "bg-blue-600 text-white" : ready ? "border border-slate-300 bg-white text-slate-700" : "bg-slate-200 text-slate-500"}`}>
+                문제 풀이
+              </button>
+            </div>
+            <div className="text-sm text-slate-600">
+              현재 점수 <span className="font-bold text-slate-900">{score}</span> / {QUESTIONS.length}
+            </div>
+          </div>
+        </div>
 
-  const finalSummary = (state.currentQuestion===QUESTIONS.length-1 && state.showResult) ? `
-    <div class="summary">
-      <h4 style="margin:0;font-size:20px">최종 결과 요약</h4>
-      <p class="muted" style="margin-top:8px">총 ${QUESTIONS.length}문항 중 ${getScore()}문항 정답입니다.</p>
-      ${QUESTIONS.map((item,idx)=>{
-        const ok = item.type==='short' ? normalizeShortAnswer(state.answers[idx])===item.shortAnswer : state.answers[idx]===item.answer;
-        return `<div class="summary-item"><span>문항 ${idx+1}. ${item.category}</span><span class="${ok?'ok':'no'}">${ok?'정답':'오답'}</span></div>`;
-      }).join('')}
-    </div>` : '';
+        {mode === "intro" && (
+          <div className="grid gap-6 p-6 md:p-8 lg:grid-cols-[1.05fr_0.95fr]">
+            <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="inline-flex rounded-full bg-blue-100 px-4 py-2 text-sm font-bold text-blue-700">시작 전 안내</div>
+              <h2 className="mt-6 text-2xl font-bold text-slate-900 md:text-3xl">팀 정보를 입력하고 활동을 시작하세요</h2>
+              <p className="mt-4 text-base leading-8 text-slate-600">
+                학생들은 같은 링크로 접속한 뒤 팀 이름과 팀원 이름을 적고 시작합니다. 단서를 4개 이상 수집하면 문제 풀이로 넘어갈 수 있습니다.
+              </p>
 
-  quiz.innerHTML = `
-    <div class="qtop">
-      <div><h3 style="margin:0;font-size:24px">문항 ${state.currentQuestion+1} / ${QUESTIONS.length}</h3><div style="margin-top:4px;font-size:14px;color:var(--slate-500)">${q.category}</div></div>
-      <button id="tabBackMapBtn" class="btn btn-secondary" style="padding:10px 16px">단서 페이지로</button>
+              <div className="mt-8 grid gap-4 md:grid-cols-2">
+                <div>
+                  <label className="mb-2 block text-sm font-bold text-slate-700">팀 이름</label>
+                  <input className="w-full rounded-2xl border border-slate-300 px-4 py-4 text-slate-800 outline-none" placeholder="예: 3조 역학탐정단" />
+                </div>
+                <div>
+                  <label className="mb-2 block text-sm font-bold text-slate-700">접속 주소</label>
+                  <input className="w-full rounded-2xl border border-slate-300 px-4 py-4 text-slate-800 outline-none" placeholder="배포된 주소를 입력하거나 불러오세요" />
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <label className="mb-2 block text-sm font-bold text-slate-700">팀원 이름</label>
+                <textarea className="min-h-[110px] w-full rounded-2xl border border-slate-300 px-4 py-4 text-slate-800 outline-none" placeholder="예: 김민수, 이지은, 박준호" />
+              </div>
+
+              <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="text-sm font-semibold text-slate-500">총 문항</div>
+                  <div className="mt-2 text-3xl font-bold text-slate-900">18</div>
+                </div>
+                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="text-sm font-semibold text-slate-500">예상 시간</div>
+                  <div className="mt-2 text-3xl font-bold text-slate-900">30분</div>
+                </div>
+                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="text-sm font-semibold text-slate-500">진행 방식</div>
+                  <div className="mt-2 text-3xl font-bold text-slate-900">팀별 경쟁</div>
+                </div>
+              </div>
+
+              <div className="mt-8 rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                <h3 className="text-lg font-bold text-slate-900">진행 순서</h3>
+                <ol className="mt-3 space-y-2 text-base leading-8 text-slate-700">
+                  <li>1. 같은 링크로 접속합니다.</li>
+                  <li>2. 팀 이름과 팀원 이름을 입력합니다.</li>
+                  <li>3. 탐사 맵에서 단서를 수집합니다.</li>
+                  <li>4. 문제를 풀고 점수와 문항별 정오답을 확인합니다.</li>
+                </ol>
+              </div>
+
+              <div className="mt-8 flex flex-wrap gap-3">
+                <button onClick={() => setMode("map")} className="rounded-2xl bg-blue-600 px-6 py-4 text-lg font-bold text-white hover:bg-blue-700">
+                  게임 시작
+                </button>
+                <button className="rounded-2xl border border-slate-300 bg-white px-6 py-4 text-lg font-bold text-slate-700 hover:bg-slate-50">
+                  현재 주소 불러오기
+                </button>
+              </div>
+            </section>
+
+            <section className="rounded-3xl border border-cyan-100 bg-cyan-50/60 p-6 shadow-sm">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-2xl font-bold text-slate-900">QR 코드 접속</h2>
+                <div className="rounded-full bg-emerald-100 px-4 py-2 text-sm font-bold text-emerald-700">모바일 최적화</div>
+              </div>
+              <p className="mt-4 text-base leading-8 text-slate-600">학생들이 태블릿이나 휴대전화로 같은 주소에 접속해 팀별로 함께 활동할 수 있도록 안내하세요.</p>
+              <div className="mt-8 rounded-[32px] border border-slate-200 bg-white p-6 text-center shadow-inner">
+                <img
+                  src={typeof window !== "undefined" ? `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(window.location.origin + window.location.pathname)}` : ""}
+                  alt="QR 코드"
+                  className="mx-auto h-64 w-64 rounded-[28px] border border-slate-200 bg-slate-50 p-3"
+                />
+              </div>
+            </section>
+          </div>
+        )}
+
+        {(mode === "map" || mode === "quiz") && (
+          <div className="grid gap-6 p-6 md:p-8 lg:grid-cols-[1.05fr_0.95fr]">
+            {mode === "map" && (
+              <section className="space-y-5">
+                <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                  <div className="mb-4 flex items-center justify-between gap-4">
+                    <div>
+                      <h2 className="text-xl font-bold text-slate-900">탐사 맵</h2>
+                      <p className="mt-1 text-sm leading-6 text-slate-600">방향 버튼이나 키보드 화살표로 이동한 뒤 조사 버튼을 누르세요.</p>
+                    </div>
+                    <button onClick={resetAll} className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">
+                      전체 초기화
+                    </button>
+                  </div>
+
+                  <div className="rounded-[28px] border border-slate-300 bg-white p-3 shadow-inner">
+                    <div className="relative aspect-square overflow-hidden rounded-[24px] bg-[radial-gradient(circle_at_center,#ecfeff_0%,#dbeafe_42%,#e2e8f0_100%)]">
+                      
+
+                      
+
+                      {BLOCKS.map((block, index) => (
+                        <div
+                          key={index}
+                          className="absolute rounded-xl bg-slate-800 shadow-lg"
+                          style={{ left: `${block.x}%`, top: `${block.y}%`, width: `${block.w}%`, height: `${block.h}%` }}
+                        />
+                      ))}
+
+                      {HOTSPOTS.map((spot) => {
+                        const discovered = visited.includes(spot.id);
+                        const nearby = nearbyHotspot?.id === spot.id;
+                        return (
+                          <div key={spot.id} className="absolute -translate-x-1/2 -translate-y-1/2" style={{ left: `${spot.x}%`, top: `${spot.y}%` }}>
+                            <div className={`relative flex h-20 w-20 items-center justify-center rounded-3xl bg-gradient-to-br ${spot.color} text-3xl text-white shadow-xl ring-4 transition-all duration-300 ${nearby ? "scale-110 animate-pulse ring-yellow-300" : "ring-white/70"}`}>
+                              {spot.icon}
+                              {discovered && <div className="absolute -right-1 -top-1 rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold text-white">완료</div>}
+                            </div>
+                            <div className="mt-2 max-w-[90px] rounded-xl bg-white/95 px-2 py-1 text-center text-[10px] font-semibold leading-tight break-words text-slate-700 shadow-sm">
+                              {spot.name}
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      <div className="absolute flex h-10 w-10 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg" style={{ left: `${player.x}%`, top: `${player.y}%` }}>
+                        🧑
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 rounded-2xl bg-white px-4 py-3 text-sm text-slate-700 shadow-sm">{message}</div>
+
+                  <div className="mt-4 grid grid-cols-3 gap-3">
+                    <div />
+                    <button onClick={() => movePlayer(0, -4)} className="rounded-2xl border border-slate-300 bg-white px-4 py-3 text-lg font-bold text-slate-700">↑</button>
+                    <div />
+                    <button onClick={() => movePlayer(-4, 0)} className="rounded-2xl border border-slate-300 bg-white px-4 py-3 text-lg font-bold text-slate-700">←</button>
+                    <button onClick={inspectNearby} className="rounded-2xl bg-blue-600 px-4 py-3 text-lg font-bold text-white">조사</button>
+                    <button onClick={() => movePlayer(4, 0)} className="rounded-2xl border border-slate-300 bg-white px-4 py-3 text-lg font-bold text-slate-700">→</button>
+                    <div />
+                    <button onClick={() => movePlayer(0, 4)} className="rounded-2xl border border-slate-300 bg-white px-4 py-3 text-lg font-bold text-slate-700">↓</button>
+                    <div />
+                  </div>
+
+                  <button onClick={goToQuestions} disabled={!ready} className={`mt-4 w-full rounded-2xl px-4 py-4 text-base font-bold text-white ${ready ? "bg-emerald-600 hover:bg-emerald-700" : "bg-slate-300"}`}>
+                    문제 풀이 시작
+                  </button>
+                </div>
+              </section>
+            )}
+
+            <section className="space-y-5">
+              {mode === "map" ? (
+                <div className="min-h-[420px] rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                  {!currentClue ? (
+                    <div className="flex h-full min-h-[360px] flex-col items-center justify-center rounded-3xl border border-dashed border-slate-300 bg-slate-50 px-6 text-center">
+                      <div className="text-5xl">🗺️</div>
+                      <h3 className="mt-4 text-xl font-bold text-slate-900">현장에 접근하여 단서를 확보하세요</h3>
+                      <p className="mt-2 max-w-md text-sm leading-7 text-slate-600">장소 가까이 접근한 뒤 조사 버튼을 눌러야 단서가 열립니다. 단서를 4개 이상 확보하면 문제 풀이 단계로 넘어갑니다.</p>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex items-center gap-3">
+                        <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${currentClue.color} text-2xl text-white shadow-md`}>
+                          {currentClue.icon}
+                        </div>
+                        <div>
+                          <h3 className="text-xl font-bold text-slate-900">{currentClue.clueTitle}</h3>
+                          <p className="text-sm text-slate-500">현장 단서와 조사 자료를 확인하세요.</p>
+                        </div>
+                      </div>
+
+                      <div className="mt-5 rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                        <p className="text-sm font-semibold text-slate-900">현장 메모</p>
+                        <p className="mt-2 leading-7 text-slate-700">{currentClue.clue}</p>
+                      </div>
+
+                      <div className="mt-5 rounded-3xl border border-slate-200 bg-white p-5">
+                        <p className="text-sm font-semibold text-slate-900">수집된 자료</p>
+                        <ul className="mt-3 space-y-2 text-sm leading-7 text-slate-700">
+                          {currentClue.data.map((item) => (
+                            <li key={item} className="rounded-2xl bg-slate-50 px-3 py-2">• {item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="min-h-[420px] rounded-3xl border border-slate-200 bg-white p-5 shadow-sm">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <h3 className="text-xl font-bold text-slate-900">문항 {currentQuestion + 1} / {QUESTIONS.length}</h3>
+                      <p className="mt-1 text-sm text-slate-500">{question.category}</p>
+                    </div>
+                    <button onClick={() => setMode("map")} className="rounded-2xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100">
+                      단서 페이지로
+                    </button>
+                  </div>
+
+                  <div className="mt-4 rounded-3xl border border-slate-200 bg-slate-50 p-5">
+                    <p className="whitespace-pre-line text-base leading-8 text-slate-800">{question.prompt}</p>
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      <div className="rounded-2xl bg-blue-50 px-3 py-2 text-sm text-blue-800">참고 단서: {relatedClue?.name}</div>
+                      <button onClick={() => setClueDrawerOpen((prev) => !prev)} className="rounded-2xl border border-blue-200 bg-white px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-50">
+                        {clueDrawerOpen ? "수집한 자료 닫기" : "수집한 자료 열기"}
+                      </button>
+                    </div>
+                  </div>
+
+                  {clueDrawerOpen && relatedClue && (
+                    <div className="mt-4 rounded-3xl border border-cyan-200 bg-cyan-50/70 p-5">
+                      <div className="flex items-center gap-3">
+                        <div className={`flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br ${relatedClue.color} text-xl text-white shadow-sm`}>
+                          {relatedClue.icon}
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-slate-900">{relatedClue.clueTitle}</p>
+                          <p className="text-xs text-slate-500">문항 풀이 중 다시 열람 가능한 현장 자료</p>
+                        </div>
+                      </div>
+                      <div className="mt-4 rounded-2xl bg-white/85 p-4">
+                        <p className="text-xs font-semibold text-slate-500">현장 메모</p>
+                        <p className="mt-2 text-sm leading-7 text-slate-700">{relatedClue.clue}</p>
+                      </div>
+                      <div className="mt-3 rounded-2xl bg-white/85 p-4">
+                        <p className="text-xs font-semibold text-slate-500">수집된 자료</p>
+                        <ul className="mt-2 space-y-2 text-sm leading-7 text-slate-700">
+                          {relatedClue.data.map((item) => (
+                            <li key={item} className="rounded-2xl bg-slate-50 px-3 py-2">• {item}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mt-5 space-y-3">
+                    {question.type === "multiple" ? (
+                      question.options.map((option, index) => {
+                        const chosen = answers[currentQuestion] === index;
+                        const reveal = showResult && answers[currentQuestion] != null;
+                        const correct = index === question.answer;
+                        return (
+                          <button
+                            key={option}
+                            disabled={showResult}
+                            onClick={() => chooseAnswer(index)}
+                            className={`w-full rounded-2xl border px-4 py-4 text-left text-sm leading-7 transition ${
+                              reveal && correct
+                                ? "border-emerald-500 bg-emerald-50 text-emerald-900"
+                                : reveal && chosen && !correct
+                                  ? "border-rose-500 bg-rose-50 text-rose-900"
+                                  : "border-slate-200 bg-white text-slate-800 hover:bg-slate-50"
+                            } ${showResult ? "cursor-default" : "cursor-pointer"}`}
+                          >
+                            <span className="mr-2 font-semibold">{String.fromCharCode(65 + index)}.</span>
+                            {option}
+                          </button>
+                        );
+                      })
+                    ) : (
+                      <div className="rounded-3xl border border-slate-200 bg-slate-50 p-4">
+                        <label className="block text-sm font-semibold text-slate-700">정답 입력</label>
+                        <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+                          <input
+                            value={shortAnswerInput}
+                            onChange={(e) => setShortAnswerInput(e.target.value)}
+                            disabled={showResult}
+                            className="flex-1 rounded-2xl border border-slate-300 bg-white px-4 py-3 text-base text-slate-800 outline-none"
+                            placeholder="숫자만 입력"
+                          />
+                          <button
+                            onClick={submitShortAnswer}
+                            disabled={showResult || !shortAnswerInput.trim()}
+                            className={`rounded-2xl px-5 py-3 text-sm font-semibold text-white ${showResult || !shortAnswerInput.trim() ? "bg-slate-300" : "bg-blue-600 hover:bg-blue-700"}`}
+                          >
+                            제출
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {showResult && answers[currentQuestion] != null && (
+                    <div className="mt-5 rounded-3xl border border-slate-200 bg-white p-5">
+                      <div className="grid gap-3 md:grid-cols-3">
+                        <div className="rounded-2xl bg-slate-50 p-4">
+                          <p className="text-xs font-semibold text-slate-500">내가 선택한 답안</p>
+                          <p className="mt-2 text-sm font-bold text-slate-900">
+                            {question.type === "short"
+                              ? `${answers[currentQuestion]}`
+                              : `${String.fromCharCode(65 + Number(answers[currentQuestion]))}. ${question.options[Number(answers[currentQuestion]) ]}`}
+                          </p>
+                        </div>
+                        <div className="rounded-2xl bg-emerald-50 p-4">
+                          <p className="text-xs font-semibold text-emerald-700">정답</p>
+                          <p className="mt-2 text-sm font-bold text-emerald-900">
+                            {question.type === "short"
+                              ? question.answerDisplay
+                              : `${String.fromCharCode(65 + question.answer)}. ${question.options[question.answer]}`}
+                          </p>
+                        </div>
+                        <div className="rounded-2xl bg-blue-50 p-4">
+                          <p className="text-xs font-semibold text-blue-700">채점</p>
+                          <p className="mt-2 text-sm font-bold text-blue-900">
+                            {question.type === "short"
+                              ? normalizeShortAnswer(String(answers[currentQuestion] ?? "")) === question.shortAnswer
+                                ? "정답"
+                                : "오답"
+                              : answers[currentQuestion] === question.answer
+                                ? "정답"
+                                : "오답"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 rounded-2xl bg-slate-50 p-4">
+                        <p className="text-xs font-semibold text-slate-500">문항 해석</p>
+                        <p className="mt-2 whitespace-pre-line text-sm leading-7 text-slate-700">{question.explanation}</p>
+                      </div>
+
+                      <div className="mt-4 flex flex-wrap gap-3">
+                        {currentQuestion < QUESTIONS.length - 1 ? (
+                          <button onClick={nextQuestion} className="rounded-2xl bg-blue-600 px-4 py-3 text-sm font-semibold text-white hover:bg-blue-700">
+                            다음 문항
+                          </button>
+                        ) : (
+                          <button onClick={resetAll} className="rounded-2xl bg-emerald-600 px-4 py-3 text-sm font-semibold text-white hover:bg-emerald-700">
+                            처음으로 돌아가기
+                          </button>
+                        )}
+                        <button
+                          onClick={() => {
+                            setMode("map");
+                            setShowResult(false);
+                            setClueDrawerOpen(false);
+                            setShortAnswerInput("");
+                          }}
+                          className="rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-100"
+                        >
+                          단서 다시 보기
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {currentQuestion === QUESTIONS.length - 1 && showResult && (
+                    <div className="mt-5 rounded-3xl border border-amber-200 bg-amber-50 p-5">
+                      <h4 className="text-lg font-bold text-slate-900">최종 결과 요약</h4>
+                      <p className="mt-2 text-sm leading-7 text-slate-700">총 {QUESTIONS.length}문항 중 {score}문항 정답입니다.</p>
+                      <div className="mt-4 space-y-2">
+                        {QUESTIONS.map((item, idx) => {
+                          const isCorrect = item.type === "short"
+                            ? normalizeShortAnswer(String(answers[idx] ?? "")) === item.shortAnswer
+                            : answers[idx] === item.answer;
+                          return (
+                            <div key={item.id} className="flex items-center justify-between rounded-2xl bg-white px-4 py-3 text-sm">
+                              <span className="text-slate-700">문항 {idx + 1}. {item.category}</span>
+                              <span className={`font-bold ${isCorrect ? "text-emerald-700" : "text-rose-700"}`}>{isCorrect ? "정답" : "오답"}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </section>
+          </div>
+        )}
+      </div>
     </div>
-    <div class="qprompt">
-      <p>${q.prompt}</p>
-      <div class="flexwrap">
-        <div class="mini-tag">참고 단서: ${r ? r.name : ''}</div>
-        <button id="toggleClueBtn" class="btn btn-secondary" style="padding:10px 12px">${state.clueDrawerOpen ? '수집한 자료 닫기' : '수집한 자료 열기'}</button>
-      </div>
-    </div>
-    ${clueDrawer}
-    <div style="margin-top:16px">${answersHtml}</div>
-    ${resultHtml}
-    ${finalSummary}
-  `;
-
-  quiz.querySelectorAll('[data-answer]').forEach(btn=>btn.addEventListener('click',()=>chooseAnswer(Number(btn.dataset.answer))));
-  const shortInput = document.getElementById('shortInput');
-  if(shortInput){ shortInput.addEventListener('input', e=>{ state.shortAnswerInput=e.target.value; renderQuiz(); }); }
-  const submit = document.getElementById('submitShortBtn'); if(submit) submit.addEventListener('click', submitShort);
-  const next = document.getElementById('nextQBtn'); if(next) next.addEventListener('click', nextQuestion);
-  const backMap = document.getElementById('backToMapBtn'); if(backMap) backMap.addEventListener('click', ()=>{state.mode='map'; state.showResult=false; state.clueDrawerOpen=false; state.shortAnswerInput=''; render();});
-  const backStart = document.getElementById('backStartBtn'); if(backStart) backStart.addEventListener('click', resetAll);
-  const toggle = document.getElementById('toggleClueBtn'); if(toggle) toggle.addEventListener('click', ()=>{state.clueDrawerOpen=!state.clueDrawerOpen; render();});
-  const tabBack = document.getElementById('tabBackMapBtn'); if(tabBack) tabBack.addEventListener('click', ()=>setMode('map'));
+  );
 }
-
-function render(){
-  document.getElementById('scoreNow').textContent = String(getScore());
-  document.getElementById('scoreTotal').textContent = String(QUESTIONS.length);
-  document.getElementById('messageBox').textContent = state.message;
-  document.getElementById('view-intro').classList.toggle('hidden', state.mode!=='intro');
-  document.getElementById('view-main').classList.toggle('hidden', state.mode==='intro');
-  document.getElementById('mapSection').classList.toggle('hidden', state.mode==='quiz');
-  document.getElementById('mapRightPlaceholder').classList.toggle('hidden', state.mode!=='map' || !!currentClue());
-  document.getElementById('clueDetail').classList.toggle('hidden', state.mode!=='map' || !currentClue());
-  document.getElementById('quizView').classList.toggle('hidden', state.mode!=='quiz');
-  document.getElementById('goQuizBtn').disabled = !ready();
-  document.getElementById('tab-intro').className = 'pill' + (state.mode==='intro' ? ' active':'');
-  document.getElementById('tab-map').className = 'pill' + (state.mode==='map' ? ' active':'');
-  document.getElementById('tab-quiz').className = 'pill' + (state.mode==='quiz' ? ' active' : (ready() ? '' : ' disabled'));
-  renderMap();
-  renderCluePanel();
-  renderQuiz();
-}
-
-// events
-['up','down','left','right'].forEach(dir=>{
-  document.querySelector(`[data-move="${dir}"]`).addEventListener('click',()=>{
-    if(dir==='up') movePlayer(0,-4); if(dir==='down') movePlayer(0,4); if(dir==='left') movePlayer(-4,0); if(dir==='right') movePlayer(4,0);
-  });
-});
-document.getElementById('inspectBtn').addEventListener('click', inspectNearby);
-document.getElementById('goQuizBtn').addEventListener('click', goQuiz);
-document.getElementById('resetBtn').addEventListener('click', resetAll);
-document.getElementById('startGameBtn').addEventListener('click', ()=>setMode('map'));
-document.getElementById('fillUrlBtn').addEventListener('click', ()=>{ const url=location.href; document.getElementById('siteUrlInput').value=url; });
-document.getElementById('tab-intro').addEventListener('click', ()=>setMode('intro'));
-document.getElementById('tab-map').addEventListener('click', ()=>setMode('map'));
-document.getElementById('tab-quiz').addEventListener('click', ()=>{ if(ready()) setMode('quiz'); });
-window.addEventListener('keydown', (e)=>{
-  if(!['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Enter',' '].includes(e.key)) return;
-  if(state.mode!=='map') return;
-  e.preventDefault();
-  if(e.key==='ArrowUp') movePlayer(0,-4);
-  if(e.key==='ArrowDown') movePlayer(0,4);
-  if(e.key==='ArrowLeft') movePlayer(-4,0);
-  if(e.key==='ArrowRight') movePlayer(4,0);
-  if(e.key==='Enter' || e.key===' ') inspectNearby();
-});
-render();
-</script>
-</body>
-</html>
